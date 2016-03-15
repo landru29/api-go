@@ -15,10 +15,22 @@ const (
 	collectionUser        = "users"
 )
 
-var currentSession *mgo.Session
+type MongoStore struct {
+	clQuizz       *mgo.Collection
+	clApplication *mgo.Collection
+	clBeerRecipe  *mgo.Collection
+	clUser        *mgo.Collection
+}
+
+var _currentSession *mgo.Session
+var  _instance *MongoStore
 
 func GetSession() (*mgo.Session) {
-	return currentSession
+	return _currentSession
+}
+
+func GetInstance() (*MongoStore) {
+	return _instance;
 }
 
 func Connect() (session *mgo.Session, err error) {
@@ -34,16 +46,22 @@ func Connect() (session *mgo.Session, err error) {
 	map[bool]string{true: ":" + password, false:""} [len(password)>0] +
 	map[bool]string{true: "@", false:""} [len(user)>0] +
 	host +
-	map[bool]string{true: ":" + port, false:""} [len(port)>0] +
-	"/" + name;
+	map[bool]string{true: ":" + port, false:""} [len(port)>0]
 
 	session, err =  mgo.Dial(mongooseConnectionChain)
-	currentSession = session
+	_currentSession = session
 
 	if err != nil {
 		panic(err)
 	}
 	defer session.Close()
+
+	_instance = &MongoStore{
+		clQuizz:       _currentSession.DB(name).C(collectionQuizz),
+		clApplication: _currentSession.DB(name).C(collectionApplication),
+		clBeerRecipe:  _currentSession.DB(name).C(collectionBeerRecipe),
+		clUser:        _currentSession.DB(name).C(collectionUser),
+	}
 
 	return
 }

@@ -1,11 +1,12 @@
 package quizz
 
 import (
-	//"gopkg.in/mgo.v2"
-	//"gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"github.com/landru29/api-go/helpers/mongo"
 )
 
-type Quizz struct {
+type Model struct {
 	id           string   `bson:"_id"`
 	explaination string   `bson:"explaination"`
 	image        string   `bson:"image"`
@@ -16,4 +17,13 @@ type Quizz struct {
 	choices      []string `bson:"choices"`
 }
 
+var data Model
 
+
+func GetInstance()  *mgo.Collection {
+	return mongo.GetInstance().clQuizz
+}
+
+func Save() (info *mgo.ChangeInfo, err error) {
+	return GetInstance().UpsertId( data.id, bson.M{ "$set": data} )
+}

@@ -18,16 +18,32 @@ type Model struct {
 }
 
 
-func Save(data Model) (info *mgo.ChangeInfo, err error) {
-	return GetInstance().UpsertId( data.id, bson.M{ "$set": data} )
+func (data Model) Save() (result Model, info *mgo.ChangeInfo, err error) {
+	info, err =  getInstance().UpsertId( data.id, bson.M{ "$set": data} )
+	result = data
+	return
 }
 
-func GetInstance()  *mgo.Collection {
+func getInstance()  *mgo.Collection {
 	return mongo.GetInstance().Quizz
 }
 
-func Find(id string) Model {
-	result := Model{}
-	GetInstance().FindId(id).One(&result)
-	return result
+func Find(id string) (result Model, err error) {
+	result = Model{}
+	err = getInstance().FindId(id).One(&result)
+	return
+}
+
+func CountAll() (result int, err error) {
+	result, err = getInstance().Count()
+	return
+}
+
+func CountPublished(level int) (result int, err error) {
+	if (level <0) {
+		result, err = getInstance().Find(bson.M{ "published": true}).Count()
+	} else {
+		result, err = getInstance().Find(bson.M{ "published": true, "level": level}).Count()
+	}
+	return
 }

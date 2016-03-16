@@ -47,7 +47,7 @@ func Connect(host, port, user, password, name string) (session *mgo.Session, err
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
+	//defer session.Close()
 
 	_instance = MongoStore{
 		Quizz:       _currentSession.DB(name).C(collectionQuizz),

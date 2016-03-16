@@ -6,6 +6,11 @@ import (
 	"github.com/landru29/api-go/helpers/mongo"
 )
 
+type Choice struct {
+	text    string `bson:"text"`
+	scoring int    `bson:"scoring"`
+}
+
 type Model struct {
 	id           string   `bson:"_id"`
 	explaination string   `bson:"explaination"`
@@ -14,12 +19,18 @@ type Model struct {
 	published    bool     `bson:"published"`
 	tags         string   `bson:"tags"`
 	text         string   `bson:"text"`
-	choices      []string `bson:"choices"`
+	choices      []Choice `bson:"choices"`
+	createdAt    string   `bson:"createdAt"`
+	updatedAt    string   `bson:"updatedAt"`
 }
 
 
 func (data Model) Save() (result Model, info *mgo.ChangeInfo, err error) {
-	info, err =  getInstance().UpsertId( data.id, bson.M{ "$set": data} )
+	if (data.id != "") {
+		info, err =  getInstance().UpsertId( data.id, bson.M{ "$set": data} )
+	} else {
+		err =  getInstance().Insert( data )
+	}
 	result = data
 	return
 }

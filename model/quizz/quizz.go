@@ -17,13 +17,17 @@ type Model struct {
 	choices      []string `bson:"choices"`
 }
 
-var data Model
 
-
-func GetInstance()  *mgo.Collection {
-	return mongo.GetInstance().clQuizz
+func Save(data Model) (info *mgo.ChangeInfo, err error) {
+	return GetInstance().UpsertId( data.id, bson.M{ "$set": data} )
 }
 
-func Save() (info *mgo.ChangeInfo, err error) {
-	return GetInstance().UpsertId( data.id, bson.M{ "$set": data} )
+func GetInstance()  *mgo.Collection {
+	return mongo.GetInstance().Quizz
+}
+
+func Find(id string) Model {
+	result := Model{}
+	GetInstance().FindId(id).One(&result)
+	return result
 }

@@ -16,31 +16,24 @@ const (
 )
 
 type MongoStore struct {
-	clQuizz       *mgo.Collection
-	clApplication *mgo.Collection
-	clBeerRecipe  *mgo.Collection
-	clUser        *mgo.Collection
+	Quizz       *mgo.Collection
+	Application *mgo.Collection
+	BeerRecipe  *mgo.Collection
+	User        *mgo.Collection
 }
 
 var _currentSession *mgo.Session
-var  _instance *MongoStore
+var  _instance MongoStore
 
 func GetSession() (*mgo.Session) {
 	return _currentSession
 }
 
-func GetInstance() (*MongoStore) {
+func GetInstance() (MongoStore) {
 	return _instance;
 }
 
-func Connect() (session *mgo.Session, err error) {
-	config.Load()
-	host := getDbParam("host")
-	port := getDbParam("port")
-	name := getDbParam("name")
-	user := getDbParam("user")
-	password := getDbParam("password")
-
+func Connect(host, port, user, password, name string) (session *mgo.Session, err error) {
 	mongooseConnectionChain := "mongodb://" +
 	map[bool]string{true: user, false:""} [len(user)>0] +
 	map[bool]string{true: ":" + password, false:""} [len(password)>0] +
@@ -56,14 +49,25 @@ func Connect() (session *mgo.Session, err error) {
 	}
 	defer session.Close()
 
-	_instance = &MongoStore{
-		clQuizz:       _currentSession.DB(name).C(collectionQuizz),
-		clApplication: _currentSession.DB(name).C(collectionApplication),
-		clBeerRecipe:  _currentSession.DB(name).C(collectionBeerRecipe),
-		clUser:        _currentSession.DB(name).C(collectionUser),
+	_instance = MongoStore{
+		Quizz:       _currentSession.DB(name).C(collectionQuizz),
+		Application: _currentSession.DB(name).C(collectionApplication),
+		BeerRecipe:  _currentSession.DB(name).C(collectionBeerRecipe),
+		User:        _currentSession.DB(name).C(collectionUser),
 	}
 
 	return
+}
+
+func AutoConnect() (session *mgo.Session, err error) {
+	config.Load()
+	host := getDbParam("host")
+	port := getDbParam("port")
+	name := getDbParam("name")
+	user := getDbParam("user")
+	password := getDbParam("password")
+
+	return Connect(host, port, user, password, name)
 }
 
 func getDbParam(key string) string {

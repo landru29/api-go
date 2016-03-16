@@ -12,7 +12,7 @@ func main() {
 	fmt.Printf("Launching API\n")
 
 	config.Load()
-	mongo.Connect()
+	mongo.AutoConnect()
 
 	r := gin.Default()
 

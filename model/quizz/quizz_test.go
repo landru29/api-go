@@ -4,24 +4,21 @@ import (
 	"testing"
 	//"github.com/stretchr/testify/assert"
 	"github.com/landru29/api-go/helpers/mongo"
-
 )
 
-
-
 func init() {
-	mongo.Connect("localhost", "27017", "", "","test")
+	mongo.Connect("localhost", "27017", "", "", "test")
 }
 
 func TestInsert(t *testing.T) {
 	quizz := Model{
-		explaination : "Explaination",
-		image        : "imgUrl",
-		level        : 0,
-		published    : true,
-		tags         : "tag1",
-		text         : "Question",
-		//choices      : []Choice{},
+		Explaination: "Explaination",
+		Image:        "imgUrl",
+		Level:        0,
+		Published:    true,
+		Tags:         "tag1",
+		Text:         "Question",
+		Choices:      []Choice{Choice{Text: "Choice1", Scoring: 10}, Choice{Text: "Choice2", Scoring: 0}},
 	}
 	quizz.Save()
 	/*a, b := SplitFloatForTimeUnix(12345678.887766)

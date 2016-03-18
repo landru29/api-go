@@ -45,7 +45,7 @@ func Connect(host, port, user, password, name string) (session *mgo.Session, err
 	_currentSession = session
 
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 	//defer session.Close()
 

@@ -1,40 +1,44 @@
 package main
 
 import (
-    "fmt"
+	"fmt"
 
-    "github.com/spf13/cobra"
-    "github.com/spf13/viper"
+	"github.com/landru29/api-go/routes"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var mainCommand = &cobra.Command{
-    Use:   "api-go",
-    Short: "API by noopy",
-    Long:  "Full API by noopy",
-    Run: func(cmd *cobra.Command, args []string) {
-        viper.SetEnvPrefix("noopy")
-        viper.AutomaticEnv()
-        viper.SetConfigType("json")
-        viper.SetConfigName("config")
-        viper.AddConfigPath(".")
-        err := viper.ReadInConfig()
-        if err != nil {
-            fmt.Println(err.Error())
-        }
+	Use:   "api-go",
+	Short: "API by noopy",
+	Long:  "Full API by noopy",
+	Run: func(cmd *cobra.Command, args []string) {
+		viper.SetEnvPrefix("noopy")
+		viper.AutomaticEnv()
+		viper.SetConfigType("json")
+		viper.SetConfigName("config")
+		viper.AddConfigPath(".")
+		err := viper.ReadInConfig()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 
-        // Application statup here
-        fmt.Println(viper.GetString("api_host"))
-    },
+		// Application statup here
+		router := routes.DefineRoutes()
+		router.Run(":" + viper.GetString("api_port"))
+	},
 }
 
 func init() {
-    flags := mainCommand.Flags()
-    flags.String("api-host", "your-api-host", "API host")
-    viper.BindPFlag("api_host", flags.Lookup("api-host"))
+	flags := mainCommand.Flags()
+	flags.String("api-host", "your-api-host", "API host")
+	flags.String("api-port", "3000", "API port")
+	viper.BindPFlag("api_host", flags.Lookup("api-host"))
+	viper.BindPFlag("api_port", flags.Lookup("api-port"))
 }
 
 func main() {
-    mainCommand.Execute()
+	mainCommand.Execute()
 
 }
 

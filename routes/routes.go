@@ -14,7 +14,7 @@ func DefineRoutes() *gin.Engine {
 	quizzGroup := router.Group("/quizz")
 	{
 		quizzGroup.GET("/", func(c *gin.Context) {
-			results, err := quizz.GetAllPublished(database)
+			results, err := quizz.RandomPublished(database, 1, 10)
 			if err != nil {
 				content := gin.H{"message": "Error while reading database"}
 				c.JSON(503, content)

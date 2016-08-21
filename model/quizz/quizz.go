@@ -1,6 +1,9 @@
 package quizz
 
 import (
+	"fmt"
+	"math/rand"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -13,16 +16,16 @@ type Choice struct {
 
 // Model define a quizz question
 type Model struct {
-	Id           string   `bson:"_id"`
-	Explaination string   `bson:"explaination"`
-	Image        string   `bson:"image"`
-	Level        int      `bson:"level"`
-	Published    bool     `bson:"published"`
-	Tags         string   `bson:"tags"`
-	Text         string   `bson:"text"`
-	Choices      []Choice `bson:"choices"`
-	CreatedAt    string   `bson:"createdAt"`
-	UpdatedAt    string   `bson:"updatedAt"`
+	ID           bson.ObjectId `bson:"_id"`
+	Explaination string        `bson:"explaination"`
+	Image        string        `bson:"image"`
+	Level        int           `bson:"level"`
+	Published    bool          `bson:"published"`
+	Tags         string        `bson:"tags"`
+	Text         string        `bson:"text"`
+	Choices      []Choice      `bson:"choices"`
+	CreatedAt    string        `bson:"createdAt"`
+	UpdatedAt    string        `bson:"updatedAt"`
 }
 
 func getCollection(db *mgo.Database) *mgo.Collection {
@@ -31,8 +34,8 @@ func getCollection(db *mgo.Database) *mgo.Collection {
 
 // Save function save a question
 func (data Model) Save(db *mgo.Database) (result Model, info *mgo.ChangeInfo, err error) {
-	if data.Id != "" {
-		info, err = getCollection(db).UpsertId(data.Id, bson.M{"$set": data})
+	if data.ID != "" {
+		info, err = getCollection(db).UpsertId(data.ID, bson.M{"$set": data})
 	} else {
 		err = getCollection(db).Insert(data)
 	}
@@ -42,7 +45,34 @@ func (data Model) Save(db *mgo.Database) (result Model, info *mgo.ChangeInfo, er
 
 // GetAllPublished function get all published questions
 func GetAllPublished(db *mgo.Database) (results []Model, err error) {
+	results = []Model{}
 	err = getCollection(db).Find(bson.M{"published": true}).All(&results)
+	return
+}
+
+// RandomPublished function get randomize questions in db
+func RandomPublished(db *mgo.Database, count int, level int) (results []Model, err error) {
+	results = []Model{}
+	// get db count
+	total, err := CountPublished(db, level)
+	if err != nil {
+		return
+	}
+	// build the list
+	var buffer []int
+	for i := 0; i < total; i++ {
+		buffer = append(buffer, i)
+	}
+	// random Published
+	for i := 0; i < count; i++ {
+		var element Model
+		index := rand.Intn(len(buffer))
+		skip := buffer[index]
+		buffer = append(buffer[:index], buffer[index+1:]...)
+		getCollection(db).Find(bson.M{"published": true, "level": level}).Skip(skip).Limit(1).One(&element)
+		results = append(results, element)
+		fmt.Println(element.ID)
+	}
 	return
 }
 

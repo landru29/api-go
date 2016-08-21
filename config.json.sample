@@ -1,3 +1,9 @@
 {
-    "api_host": "my host"
+    "api_host": "my host",
+    "api_port": "3000",
+    "mongo_host": "127.0.0.1",
+    "mongo_port": "27017",
+    "mongo_user": "your-mongodb-user",
+    "mongo_password": "your-mongodb-password",
+    "mongo_db_name": "your-mongodb-dbname"
 }

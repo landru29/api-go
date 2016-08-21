@@ -42,6 +42,8 @@ func init() {
 	flags.String("mongo-password", "your-mongodb-password", "MongoDb password")
 	flags.String("mongo-db-name", "your-mongodb-dbname", "MongoDb base name")
 
+	flags.String("default-pagination-limit", "10", "Default pagination limit")
+
 	viper.BindPFlag("api_host", flags.Lookup("api-host"))
 	viper.BindPFlag("api_port", flags.Lookup("api-port"))
 
@@ -50,6 +52,8 @@ func init() {
 	viper.BindPFlag("mongo_user", flags.Lookup("mongo-user"))
 	viper.BindPFlag("mongo_password", flags.Lookup("mongo-password"))
 	viper.BindPFlag("mongo_db_name", flags.Lookup("mongo-db-name"))
+
+	viper.BindPFlag("default_pagination_limit", flags.Lookup("default-pagination-limit"))
 }
 
 func main() {

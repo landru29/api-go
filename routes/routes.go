@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/landru29/api-go/middleware"
 	"github.com/landru29/api-go/model/quizz"
 	"github.com/landru29/api-go/mongo"
 )
@@ -10,11 +11,13 @@ import (
 func DefineRoutes() *gin.Engine {
 	database := mongo.GetMongoDatabase()
 	router := gin.Default()
+	router.Use(middleware.PaginationMiddleware())
 
 	quizzGroup := router.Group("/quizz")
 	{
 		quizzGroup.GET("/", func(c *gin.Context) {
-			results, err := quizz.RandomPublished(database, 1, 10)
+			count, _ := c.Get("count")
+			results, err := quizz.RandomPublished(database, count.(int), 10)
 			if err != nil {
 				content := gin.H{"message": "Error while reading database"}
 				c.JSON(503, content)

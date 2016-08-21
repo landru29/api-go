@@ -1,7 +1,6 @@
 package quizz
 
 import (
-	"fmt"
 	"math/rand"
 
 	"gopkg.in/mgo.v2"
@@ -65,13 +64,14 @@ func RandomPublished(db *mgo.Database, count int, level int) (results []Model, e
 	}
 	// random Published
 	for i := 0; i < count; i++ {
-		var element Model
-		index := rand.Intn(len(buffer))
-		skip := buffer[index]
-		buffer = append(buffer[:index], buffer[index+1:]...)
-		getCollection(db).Find(bson.M{"published": true, "level": level}).Skip(skip).Limit(1).One(&element)
-		results = append(results, element)
-		fmt.Println(element.ID)
+		if len(buffer) > 0 {
+			var element Model
+			index := rand.Intn(len(buffer))
+			skip := buffer[index]
+			buffer = append(buffer[:index], buffer[index+1:]...)
+			getCollection(db).Find(bson.M{"published": true, "level": level}).Skip(skip).Limit(1).One(&element)
+			results = append(results, element)
+		}
 	}
 	return
 }

@@ -1,7 +1,6 @@
 package quizz
 
 import (
-	"github.com/landru29/api-go/mongo"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -26,40 +25,46 @@ type Model struct {
 	UpdatedAt    string   `bson:"updatedAt"`
 }
 
-func getCollection() *mgo.Collection {
-	return mongo.GetMongoDatabase().C("quizz")
+func getCollection(db *mgo.Database) *mgo.Collection {
+	return db.C("quizzs")
 }
 
 // Save function save a question
-func (data Model) Save() (result Model, info *mgo.ChangeInfo, err error) {
+func (data Model) Save(db *mgo.Database) (result Model, info *mgo.ChangeInfo, err error) {
 	if data.Id != "" {
-		info, err = getCollection().UpsertId(data.Id, bson.M{"$set": data})
+		info, err = getCollection(db).UpsertId(data.Id, bson.M{"$set": data})
 	} else {
-		err = getCollection().Insert(data)
+		err = getCollection(db).Insert(data)
 	}
 	result = data
 	return
 }
 
+// GetAllPublished function get all published questions
+func GetAllPublished(db *mgo.Database) (results []Model, err error) {
+	err = getCollection(db).Find(bson.M{"published": true}).All(&results)
+	return
+}
+
 // Find function find an element
-func Find(id string) (result Model, err error) {
+func Find(db *mgo.Database, id string) (result Model, err error) {
 	result = Model{}
-	err = getCollection().FindId(id).One(&result)
+	err = getCollection(db).FindId(id).One(&result)
 	return
 }
 
 // CountAll count all the questions
-func CountAll() (result int, err error) {
-	result, err = getCollection().Count()
+func CountAll(db *mgo.Database) (result int, err error) {
+	result, err = getCollection(db).Count()
 	return
 }
 
 // CountPublished count all published questions
-func CountPublished(level int) (result int, err error) {
+func CountPublished(db *mgo.Database, level int) (result int, err error) {
 	if level < 0 {
-		result, err = getCollection().Find(bson.M{"published": true}).Count()
+		result, err = getCollection(db).Find(bson.M{"published": true}).Count()
 	} else {
-		result, err = getCollection().Find(bson.M{"published": true, "level": level}).Count()
+		result, err = getCollection(db).Find(bson.M{"published": true, "level": level}).Count()
 	}
 	return
 }

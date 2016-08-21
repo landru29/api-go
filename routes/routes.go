@@ -1,16 +1,26 @@
 package routes
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/landru29/api-go/model/quizz"
+	"github.com/landru29/api-go/mongo"
+)
 
 // DefineRoutes defines all routes
 func DefineRoutes() *gin.Engine {
+	database := mongo.GetMongoDatabase()
 	router := gin.Default()
 
-	quizz := router.Group("/quizz")
+	quizzGroup := router.Group("/quizz")
 	{
-		quizz.GET("/", func(c *gin.Context) {
-			content := gin.H{"Hello": "World"}
-			c.JSON(200, content)
+		quizzGroup.GET("/", func(c *gin.Context) {
+			results, err := quizz.GetAllPublished(database)
+			if err != nil {
+				content := gin.H{"message": "Error while reading database"}
+				c.JSON(503, content)
+			} else {
+				c.JSON(200, results)
+			}
 		})
 	}
 

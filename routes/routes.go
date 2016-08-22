@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/landru29/api-go/middleware"
 	"github.com/landru29/api-go/model/quizz"
@@ -13,6 +15,14 @@ func DefineRoutes() *gin.Engine {
 	router := gin.Default()
 	router.Use(middleware.PaginationMiddleware())
 
+	router.LoadHTMLGlob("./templates/*")
+
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"title": "Main website",
+		})
+	})
+
 	quizzGroup := router.Group("/quizz")
 	{
 		quizzGroup.GET("/", func(c *gin.Context) {
@@ -20,9 +30,9 @@ func DefineRoutes() *gin.Engine {
 			results, err := quizz.RandomPublished(database, count.(int), 10)
 			if err != nil {
 				content := gin.H{"message": "Error while reading database"}
-				c.JSON(503, content)
+				c.JSON(http.StatusServiceUnavailable, content)
 			} else {
-				c.JSON(200, results)
+				c.JSON(http.StatusOK, results)
 			}
 		})
 	}

@@ -65,7 +65,7 @@ func handleFacebook(router *gin.Engine, database *mgo.Database) {
 			return
 		}
 		userDb, errDb := user.FindUser(database, userAuth.Email)
-		if errDb != nil {
+		if errDb == nil {
 			userDb.Name = userAuth.Name
 			userDb.Facebook.Code = c.DefaultQuery("code", "")
 			userDb.Facebook.ID = userAuth.Id
@@ -76,6 +76,10 @@ func handleFacebook(router *gin.Engine, database *mgo.Database) {
 				c.AbortWithStatus(500)
 				return
 			}
+		} else {
+			fmt.Println(errDb)
+			c.AbortWithStatus(500)
+			return
 		}
 		loginRedirect(c, userAuth.Email)
 	})
@@ -91,7 +95,7 @@ func handleGoogle(router *gin.Engine, database *mgo.Database) {
 			return
 		}
 		userDb, errDb := user.FindUser(database, userAuth.Email)
-		if errDb != nil {
+		if errDb == nil {
 			userDb.Name = userAuth.Name
 			userDb.Google.Code = c.DefaultQuery("code", "")
 			userDb.Google.ID = userAuth.Id
@@ -101,6 +105,10 @@ func handleGoogle(router *gin.Engine, database *mgo.Database) {
 				c.AbortWithStatus(500)
 				return
 			}
+		} else {
+			fmt.Println(errDb)
+			c.AbortWithStatus(500)
+			return
 		}
 		loginRedirect(c, userAuth.Email)
 	})

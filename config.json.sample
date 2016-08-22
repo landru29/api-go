@@ -1,9 +1,18 @@
 {
     "api_host": "my host",
     "api_port": "3000",
+    "api_protocol": "http",
     "mongo_host": "127.0.0.1",
     "mongo_port": "27017",
     "mongo_user": "your-mongodb-user",
     "mongo_password": "your-mongodb-password",
-    "mongo_db_name": "your-mongodb-dbname"
+    "mongo_db_name": "your-mongodb-dbname",
+    "facebookAuth": {
+        "clientID": "FB-client-id",
+        "clientSecret": "FB-client-secret"
+    },
+    "googleAuth": {
+        "clientID": "G-client-id",
+        "clientSecret": "G-client-secret"
+    }
 }

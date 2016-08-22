@@ -3,16 +3,52 @@ package routes
 import (
 	"net/http"
 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/facebook"
+
+	"github.com/durango/gin-passport-facebook"
 	"github.com/gin-gonic/gin"
 	"github.com/landru29/api-go/middleware"
 	"github.com/landru29/api-go/model/quizz"
 	"github.com/landru29/api-go/mongo"
+	"github.com/spf13/viper"
 )
+
+func apiBaseURL() string {
+	port := viper.GetString("api_port")
+	return viper.GetString("api_protocol") + "://" + viper.GetString("api_host") +
+		map[bool]string{true: ":" + port, false: ""}[len(port) > 0] + "/"
+}
+
+func prepareFaceBook() *oauth2.Config {
+	return &oauth2.Config{
+		RedirectURL:  apiBaseURL() + "auth/facebook/callback",
+		ClientID:     viper.GetString("facebookAuth.clientId"),
+		ClientSecret: viper.GetString("facebookAuth.clientSecret"),
+		Scopes:       []string{"email", "public_profile", "id", "name"},
+		Endpoint:     facebook.Endpoint,
+	}
+}
 
 // DefineRoutes defines all routes
 func DefineRoutes() *gin.Engine {
 	database := mongo.GetMongoDatabase()
 	router := gin.Default()
+
+	// facebook
+	auth := router.Group("/auth/facebook")
+	GinPassportFacebook.Routes(prepareFaceBook(), auth)
+	auth.GET("/callback", GinPassportFacebook.Middleware(), func(c *gin.Context) {
+		user, err := GinPassportFacebook.GetProfile(c)
+		if user == nil || err != nil {
+			c.AbortWithStatus(500)
+			return
+		}
+
+		c.String(200, "Got it!")
+	})
+
+	// Middlewares
 	router.Use(middleware.PaginationMiddleware())
 
 	router.LoadHTMLGlob("./templates/*")

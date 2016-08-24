@@ -1,111 +1,94 @@
 package routes
 
 import (
-    "encoding/json"
-    "io/ioutil"
-    "net/http"
-    "net/url"
+	"net/http"
 
-    "github.com/spf13/viper"
+	"github.com/spf13/viper"
 
-    "github.com/gin-gonic/gin"
-    "github.com/landru29/api-go/model/user"
-    "golang.org/x/oauth2"
-    "golang.org/x/oauth2/facebook"
-    mgo "gopkg.in/mgo.v2"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/facebook"
+	mgo "gopkg.in/mgo.v2"
 )
 
-func prepareFaceBook() *oauth2.Config {
-    return &oauth2.Config{
-        RedirectURL:  apiBaseURL() + "auth/facebook/callback",
-        ClientID:     viper.GetString("facebookAuth.clientId"),
-        ClientSecret: viper.GetString("facebookAuth.clientSecret"),
-        Scopes:       []string{"email", "public_profile"},
-        Endpoint:     facebook.Endpoint,
-    }
+func prepareFacebook() *oauth2.Config {
+	return &oauth2.Config{
+		RedirectURL:  apiBaseURL() + "auth/facebook/callback",
+		ClientID:     viper.GetString("facebookAuth.clientId"),
+		ClientSecret: viper.GetString("facebookAuth.clientSecret"),
+		Scopes:       []string{"email", "public_profile"},
+		Endpoint:     facebook.Endpoint,
+	}
 }
 
 func handleFacebook(router *gin.Engine, database *mgo.Database) {
-    facebookRouter := router.Group("/auth/facebook")
-    authFacebook := prepareFaceBook()
+	facebookRouter := router.Group("/auth/facebook")
+	authFacebook := prepareFacebook()
 
-    facebookRouter.GET("/login", func(c *gin.Context) {
-        url := authFacebook.AuthCodeURL("")
-        redirect := "redirect=" + c.Query("redirect") + "; Path=/; HttpOnly"
-        c.Header("set-cookie", redirect)
-        c.Redirect(http.StatusFound, url)
-    })
+	facebookRouter.GET("/login", func(c *gin.Context) {
+		url := authFacebook.AuthCodeURL("")
+		redirect := "redirect=" + c.Query("redirect") + "; Path=/; HttpOnly"
+		c.Header("set-cookie", redirect)
+		c.Redirect(http.StatusFound, url)
+	})
 
-    facebookRouter.GET("/callback", func(c *gin.Context) {
+	facebookRouter.GET("/callback", func(c *gin.Context) {
 
-        redirect, err := c.Cookie("redirect")
-        if err != nil {
-            c.Redirect(301, "/error")
-            return
-        }
-        redirectUrl, err := url.Parse(redirect)
-        if err != nil {
-            c.Redirect(301, "/error")
-            return
-        }
+		c.Request.ParseForm()
 
-        c.Request.ParseForm()
+		fbCode := c.Request.Form.Get("code")
 
-        fbCode := c.Request.Form.Get("code")
+		token, err := authFacebook.Exchange(c, fbCode)
+		if token == nil {
+			c.Redirect(301, "/")
+			return
+		} else if err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
 
-        token, err := authFacebook.Exchange(c, fbCode)
+		/*client := authFacebook.Client(c, token)
 
-        if token == nil {
-            c.Redirect(301, "/")
-            return
-        } else if err != nil {
-            c.AbortWithError(http.StatusInternalServerError, err)
-            return
-        }
+		  resp, err := client.Get("https://graph.facebook.com/v2.2/me?fields=id,name,email,picture,first_name,last_name")
+		  if err != nil {
+		      c.AbortWithError(http.StatusInternalServerError, err)
+		      return
+		  }
 
-        q := redirectUrl.Query()
-        q.Add("access-token", token.AccessToken)
-        redirectUrl.RawQuery = q.Encode()
+		  defer resp.Body.Close()
+		  contents, err := ioutil.ReadAll(resp.Body)
+		  if err != nil {
+		      c.AbortWithError(http.StatusInternalServerError, err)
+		      return
+		  }
 
-        client := authFacebook.Client(c, token)
+		  var userInformation Profile
+		  err = json.Unmarshal(contents, &userInformation)
+		  if err != nil {
+		      c.AbortWithError(http.StatusInternalServerError, err)
+		      return
+		  }*/
 
-        resp, err := client.Get("https://graph.facebook.com/v2.2/me?fields=id,name,email,picture,first_name,last_name")
-        if err != nil {
-            c.AbortWithError(http.StatusInternalServerError, err)
-            return
-        }
-
-        defer resp.Body.Close()
-        contents, err := ioutil.ReadAll(resp.Body)
-        if err != nil {
-            c.AbortWithError(http.StatusInternalServerError, err)
-            return
-        }
-
-        var userInformation Profile
-        err = json.Unmarshal(contents, &userInformation)
-        if err != nil {
-            c.AbortWithError(http.StatusInternalServerError, err)
-            return
-        }
-
-        userDb, errDb := user.FindUser(database, userInformation.Email)
-        if errDb == nil {
-            userDb.Name = userInformation.Name
-            userDb.Facebook.Code = fbCode
-            userDb.Facebook.ID = userInformation.ID
-            userDb.Google.Code = ""
-            userDb.Save(database)
-            _, _, errSave := userDb.Save(database)
-            if errSave != nil {
-                c.AbortWithStatus(500)
-                return
-            }
-        } else {
-            c.AbortWithStatus(500)
-            return
-        }
-        c.Redirect(301, redirectUrl.String())
-        //loginRedirect(c, userInformation.Email)
-    })
+		/*userDb, errDb := user.FindUser(database, userInformation.Email)
+		  if errDb == nil {
+		      userDb.Name = userInformation.Name
+		      userDb.Facebook.Code = fbCode
+		      userDb.Facebook.ID = userInformation.ID
+		      userDb.Google.Code = ""
+		      userDb.Save(database)
+		      _, _, errSave := userDb.Save(database)
+		      if errSave != nil {
+		          c.AbortWithStatus(500)
+		          return
+		      }
+		  } else {
+		      c.AbortWithStatus(500)
+		      return
+		  }*/
+		uri, err := getRedirect(c, "fb", token)
+		if err != nil {
+			return
+		}
+		c.Redirect(301, uri)
+	})
 }

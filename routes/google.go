@@ -1,11 +1,9 @@
 package routes
 
 import (
-	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/landru29/api-go/model/user"
-	"github.com/landru29/gin-passport-google"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -24,33 +22,36 @@ func prepareGoogle() *oauth2.Config {
 }
 
 func handleGoogle(router *gin.Engine, database *mgo.Database) {
-	authGoogle := router.Group("/auth/google")
-	GinPassportGoogle.Routes(prepareGoogle(), authGoogle)
-	authGoogle.GET("/callback", GinPassportGoogle.Middleware(), func(c *gin.Context) {
-		userAuth, err := GinPassportGoogle.GetProfile(c)
-		if (userAuth == nil) || (err != nil) {
-			c.AbortWithStatus(500)
+	googleRouter := router.Group("/auth/google")
+	authGoogle := prepareGoogle()
+
+	googleRouter.GET("/login", func(c *gin.Context) {
+		url := authGoogle.AuthCodeURL("")
+		redirect := "redirect=" + c.Query("redirect") + "; Path=/; HttpOnly"
+		c.Header("set-cookie", redirect)
+		c.Redirect(http.StatusFound, url)
+	})
+
+	googleRouter.GET("/callback", func(c *gin.Context) {
+
+		c.Request.ParseForm()
+
+		gCode := c.Request.Form.Get("code")
+
+		token, err := authGoogle.Exchange(c, gCode)
+		if token == nil {
+			c.Redirect(301, "/")
+			return
+		} else if err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 
-		accessToken, _ := c.Get("client-token")
-		fmt.Println(accessToken.(oauth2.Token))
-
-		userDb, errDb := user.FindUser(database, userAuth.Email)
-		if errDb == nil {
-			userDb.Name = userAuth.Name
-			userDb.Google.Code = c.DefaultQuery("code", "")
-			userDb.Google.ID = userAuth.Id
-			userDb.Facebook.Code = ""
-			_, _, errSave := userDb.Save(database)
-			if errSave != nil {
-				c.AbortWithStatus(500)
-				return
-			}
-		} else {
-			c.AbortWithStatus(500)
+		uri, err := getRedirect(c, "g", token)
+		if err != nil {
 			return
 		}
-		loginRedirect(c, userAuth.Email)
+		c.Redirect(301, uri)
+
 	})
 }

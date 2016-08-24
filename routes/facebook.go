@@ -85,7 +85,7 @@ func handleFacebook(router *gin.Engine, database *mgo.Database) {
 		      c.AbortWithStatus(500)
 		      return
 		  }*/
-		uri, err := getRedirect(c, "fb", token)
+		uri, err := getRedirect(c, "facebook", token)
 		if err != nil {
 			return
 		}

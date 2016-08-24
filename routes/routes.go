@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/landru29/api-go/apisessions"
 	"github.com/landru29/api-go/middleware"
 	"github.com/landru29/api-go/model/quizz"
 	"github.com/landru29/api-go/mongo"
@@ -31,10 +29,6 @@ func loginRedirect(c *gin.Context, id string) {
 func DefineRoutes() *gin.Engine {
 	database := mongo.GetMongoDatabase()
 	router := gin.Default()
-	store := apisessions.NewMongoStore(mongo.GetMongoDatabase().C("session"), 3600, true,
-		[]byte("token"))
-
-	router.Use(sessions.Sessions("tokenSession", store))
 
 	// facebook
 	handleFacebook(router, database)

@@ -47,7 +47,7 @@ func handleGoogle(router *gin.Engine, database *mgo.Database) {
 			return
 		}
 
-		uri, err := getRedirect(c, "g", token)
+		uri, err := getRedirect(c, "google", token)
 		if err != nil {
 			return
 		}

@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "io/ioutil"
     "net/http"
+    "net/url"
 
     "github.com/spf13/viper"
 
@@ -30,10 +31,24 @@ func handleFacebook(router *gin.Engine, database *mgo.Database) {
 
     facebookRouter.GET("/login", func(c *gin.Context) {
         url := authFacebook.AuthCodeURL("")
+        redirect := "redirect=" + c.Query("redirect") + "; Path=/; HttpOnly"
+        c.Header("set-cookie", redirect)
         c.Redirect(http.StatusFound, url)
     })
 
     facebookRouter.GET("/callback", func(c *gin.Context) {
+
+        redirect, err := c.Cookie("redirect")
+        if err != nil {
+            c.Redirect(301, "/error")
+            return
+        }
+        redirectUrl, err := url.Parse(redirect)
+        if err != nil {
+            c.Redirect(301, "/error")
+            return
+        }
+
         c.Request.ParseForm()
 
         fbCode := c.Request.Form.Get("code")
@@ -47,6 +62,10 @@ func handleFacebook(router *gin.Engine, database *mgo.Database) {
             c.AbortWithError(http.StatusInternalServerError, err)
             return
         }
+
+        q := redirectUrl.Query()
+        q.Add("access-token", token.AccessToken)
+        redirectUrl.RawQuery = q.Encode()
 
         client := authFacebook.Client(c, token)
 
@@ -86,6 +105,7 @@ func handleFacebook(router *gin.Engine, database *mgo.Database) {
             c.AbortWithStatus(500)
             return
         }
-        loginRedirect(c, userInformation.Email)
+        c.Redirect(301, redirectUrl.String())
+        //loginRedirect(c, userInformation.Email)
     })
 }

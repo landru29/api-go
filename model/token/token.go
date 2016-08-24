@@ -12,6 +12,7 @@ type Model struct {
 	AccessToken  string        `bson:"accressToken"`
 	RefreshToken string        `bson:"refreshToken"`
 	Origin       string        `bson:"origin"`
+	Email        string        `bson:"email"`
 	Expiry       int64         `bson:"expiry"`
 }
 

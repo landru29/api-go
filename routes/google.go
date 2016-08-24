@@ -10,6 +10,9 @@ import (
 	mgo "gopkg.in/mgo.v2"
 )
 
+// Google is the name of google
+const Google = "google"
+
 func prepareGoogle() *oauth2.Config {
 	return &oauth2.Config{
 		RedirectURL:  apiBaseURL() + "auth/google/callback",
@@ -38,8 +41,8 @@ func handleGoogle(router *gin.Engine, database *mgo.Database) {
 
 		gCode := c.Request.Form.Get("code")
 
-		token, err := authGoogle.Exchange(c, gCode)
-		if token == nil {
+		apiToken, err := authGoogle.Exchange(c, gCode)
+		if apiToken == nil {
 			c.Redirect(301, "/")
 			return
 		} else if err != nil {
@@ -47,7 +50,13 @@ func handleGoogle(router *gin.Engine, database *mgo.Database) {
 			return
 		}
 
-		uri, err := getRedirect(c, "google", token)
+		profile, err := getProfile(c, authGoogle, apiToken, Google)
+		if err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+
+		uri, err := getRedirect(c, Google, apiToken, profile)
 		if err != nil {
 			return
 		}

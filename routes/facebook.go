@@ -11,6 +11,9 @@ import (
 	mgo "gopkg.in/mgo.v2"
 )
 
+// Facebook is the name of facebook
+const Facebook = "facebook"
+
 func prepareFacebook() *oauth2.Config {
 	return &oauth2.Config{
 		RedirectURL:  apiBaseURL() + "auth/facebook/callback",
@@ -38,8 +41,8 @@ func handleFacebook(router *gin.Engine, database *mgo.Database) {
 
 		fbCode := c.Request.Form.Get("code")
 
-		token, err := authFacebook.Exchange(c, fbCode)
-		if token == nil {
+		apiToken, err := authFacebook.Exchange(c, fbCode)
+		if apiToken == nil {
 			c.Redirect(301, "/")
 			return
 		} else if err != nil {
@@ -47,45 +50,13 @@ func handleFacebook(router *gin.Engine, database *mgo.Database) {
 			return
 		}
 
-		/*client := authFacebook.Client(c, token)
+		profile, err := getProfile(c, authFacebook, apiToken, Facebook)
+		if err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
 
-		  resp, err := client.Get("https://graph.facebook.com/v2.2/me?fields=id,name,email,picture,first_name,last_name")
-		  if err != nil {
-		      c.AbortWithError(http.StatusInternalServerError, err)
-		      return
-		  }
-
-		  defer resp.Body.Close()
-		  contents, err := ioutil.ReadAll(resp.Body)
-		  if err != nil {
-		      c.AbortWithError(http.StatusInternalServerError, err)
-		      return
-		  }
-
-		  var userInformation Profile
-		  err = json.Unmarshal(contents, &userInformation)
-		  if err != nil {
-		      c.AbortWithError(http.StatusInternalServerError, err)
-		      return
-		  }*/
-
-		/*userDb, errDb := user.FindUser(database, userInformation.Email)
-		  if errDb == nil {
-		      userDb.Name = userInformation.Name
-		      userDb.Facebook.Code = fbCode
-		      userDb.Facebook.ID = userInformation.ID
-		      userDb.Google.Code = ""
-		      userDb.Save(database)
-		      _, _, errSave := userDb.Save(database)
-		      if errSave != nil {
-		          c.AbortWithStatus(500)
-		          return
-		      }
-		  } else {
-		      c.AbortWithStatus(500)
-		      return
-		  }*/
-		uri, err := getRedirect(c, "facebook", token)
+		uri, err := getRedirect(c, Facebook, apiToken, profile)
 		if err != nil {
 			return
 		}

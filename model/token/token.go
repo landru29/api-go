@@ -1,6 +1,8 @@
 package token
 
 import (
+	"fmt"
+
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -28,14 +30,21 @@ func FindToken(db *mgo.Database, ID string) (result Model, err error) {
 
 // Save save a user
 func (data Model) Save(db *mgo.Database) (result Model, err error) {
-	/*if data.ID == nil {
-		data.ID = bson.NewObjectId().Hex()
-		_, err = getCollection(db).Insert(data)
+	var count int
+	result = Model{}
+	count, err = getCollection(db).Find(bson.M{"email": data.Email}).Limit(1).Count()
+	fmt.Println(err)
+	if err != nil {
+		return
+	}
+	if count == 0 {
+		data.ID = bson.NewObjectId()
+		err = getCollection(db).Insert(data)
 	} else {
-		err := getCollection(db).UpdateId(data.ID, bson.M{"$set": data})
-	}*/
-	data.ID = bson.NewObjectId()
-	err = getCollection(db).Insert(data)
+		data.ID = bson.NewObjectId()
+		err = getCollection(db).Update(bson.M{"email": data.Email}, data)
+	}
+	fmt.Println(err)
 	result = data
 	return
 }

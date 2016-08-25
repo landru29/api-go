@@ -45,6 +45,8 @@ func init() {
 
 	flags.String("default-pagination-limit", "10", "Default pagination limit")
 
+	flags.String("jwt-secret", "my_secret", "jwt secret to sign token")
+
 	flags.String("facebookAuth-clientId", "FB-client-id", "Facebook client ID")
 	flags.String("facebookAuth-clientSecret", "FB-client-secret", "Facebook client secret")
 	flags.String("googleAuth-clientId", "G-client-id", "Google client ID")
@@ -61,6 +63,8 @@ func init() {
 	viper.BindPFlag("mongo_db_name", flags.Lookup("mongo-db-name"))
 
 	viper.BindPFlag("default_pagination_limit", flags.Lookup("default-pagination-limit"))
+
+	viper.BindPFlag("jwt_secret", flags.Lookup("jwt-secret"))
 
 	viper.BindPFlag("facebookAuth.clientId", flags.Lookup("facebookAuth-clientId"))
 	viper.BindPFlag("facebookAuth.clientSecret", flags.Lookup("facebookAuth-clientSecret"))

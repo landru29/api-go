@@ -7,6 +7,7 @@
     "mongo_user": "your-mongodb-user",
     "mongo_password": "your-mongodb-password",
     "mongo_db_name": "your-mongodb-dbname",
+    "jwt_secret": "my_jwt_secret",
     "facebookAuth": {
         "clientID": "FB-client-id",
         "clientSecret": "FB-client-secret"

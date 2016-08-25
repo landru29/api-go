@@ -2,17 +2,29 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/landru29/api-go/model/token"
 	"github.com/landru29/api-go/mongo"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 )
 
-func getRedirect(c *gin.Context, origin string, tokenObj *oauth2.Token, p Profile) (uri string, err error) {
+func encodeToken(savedToken token.Model) (tokenString string, err error) {
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"token":  savedToken.ID.Hex(),
+		"expiry": savedToken.Expiry,
+	})
+	tokenString, err = jwtToken.SignedString([]byte(viper.GetString("jwt_secret")))
+	return
+}
+
+func getRedirect(c *gin.Context, origin string, tokenObj *oauth2.Token, email string) (uri string, err error) {
 	uri = ""
 	redirect, err := c.Cookie("redirect")
 	if err != nil {
@@ -30,7 +42,7 @@ func getRedirect(c *gin.Context, origin string, tokenObj *oauth2.Token, p Profil
 		AccessToken:  tokenObj.AccessToken,
 		RefreshToken: tokenObj.RefreshToken,
 		Expiry:       tokenObj.Expiry.Unix(),
-		Email:        p.Email,
+		Email:        email,
 		Origin:       origin,
 	}
 
@@ -40,12 +52,28 @@ func getRedirect(c *gin.Context, origin string, tokenObj *oauth2.Token, p Profil
 		return
 	}
 
+	jwtToken, err := encodeToken(savedToken)
+	if err != nil {
+		c.Redirect(301, "/error")
+		return
+	}
+
 	q := redirectURL.Query()
-	q.Add("api-token", savedToken.ID.Hex())
+	q.Add("api-token", jwtToken)
 	redirectURL.RawQuery = q.Encode()
 
 	uri = redirectURL.String()
 
+	return
+}
+
+func getEmail(c *gin.Context, auth *oauth2.Config, apiToken *oauth2.Token, origin string) (email string, err error) {
+	var profile Profile
+	profile, err = getProfile(c, auth, apiToken, origin)
+	email = profile.Email
+	if len(profile.Email) == 0 {
+		err = errors.New("Empty Email")
+	}
 	return
 }
 
@@ -109,6 +137,10 @@ func getProfile(c *gin.Context, auth *oauth2.Config, apiToken *oauth2.Token, ori
 		}
 	default:
 		profile = Profile{}
+	}
+
+	if len(profile.Email) == 0 {
+		err = errors.New("Empty Email")
 	}
 
 	return

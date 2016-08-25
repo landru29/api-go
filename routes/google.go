@@ -50,13 +50,13 @@ func handleGoogle(router *gin.Engine, database *mgo.Database) {
 			return
 		}
 
-		profile, err := getProfile(c, authGoogle, apiToken, Google)
+		email, err := getEmail(c, authGoogle, apiToken, Google)
 		if err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 
-		uri, err := getRedirect(c, Google, apiToken, profile)
+		uri, err := getRedirect(c, Google, apiToken, email)
 		if err != nil {
 			return
 		}

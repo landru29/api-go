@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,14 +16,6 @@ func apiBaseURL() string {
 		map[bool]string{true: ":" + port, false: ""}[len(port) > 0] + "/"
 }
 
-func loginRedirect(c *gin.Context, id string) {
-	code := c.DefaultQuery("code", "")
-	fmt.Println(id)
-	fmt.Println(code)
-
-	c.String(200, "Got it!")
-}
-
 // DefineRoutes defines all routes
 func DefineRoutes() *gin.Engine {
 	database := mongo.GetMongoDatabase()
@@ -38,6 +29,7 @@ func DefineRoutes() *gin.Engine {
 
 	// Middlewares
 	router.Use(middleware.PaginationMiddleware())
+	router.Use(middleware.JwtMiddleware(database))
 
 	router.LoadHTMLGlob("./templates/*")
 

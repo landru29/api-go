@@ -2,3 +2,5 @@ config.json
 *.iml
 .idea
 api-go
+node_modules
+dist

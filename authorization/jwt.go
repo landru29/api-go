@@ -1,6 +1,8 @@
 package authorization
 
 import (
+    "fmt"
+
     "github.com/dgrijalva/jwt-go"
     "github.com/landru29/api-go/model/token"
     "github.com/spf13/viper"
@@ -30,11 +32,14 @@ func DecodeToken(tokenString string, db *mgo.Database) (dbToken token.Model, err
         return []byte(viper.GetString("jwt_secret")), nil
     })
     if err != nil {
+        fmt.Println("JWT: Not JWT")
         return
     }
     if claims, ok := tokenJwt.Claims.(*MyCustomClaims); ok && tokenJwt.Valid {
         dbToken, err = token.FindToken(db, claims.Token)
         if err != nil {
+            fmt.Println("JWT: Not found in db")
+            fmt.Println(claims.Token)
             return
         }
     }

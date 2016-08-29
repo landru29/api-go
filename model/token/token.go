@@ -22,7 +22,7 @@ func getCollection(db *mgo.Database) *mgo.Collection {
 
 // FindToken find a user
 func FindToken(db *mgo.Database, ID string) (result Model, err error) {
-    err = getCollection(db).FindId(bson.M{"_id": bson.ObjectIdHex(ID)}).One(&result)
+    err = getCollection(db).FindId(bson.ObjectIdHex(ID)).One(&result)
     return
 }
 

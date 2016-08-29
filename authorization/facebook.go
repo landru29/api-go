@@ -51,13 +51,13 @@ func HandleFacebook(router *gin.Engine, database *mgo.Database) {
 			return
 		}
 
-		email, err := GetEmail(c, authFacebook, apiToken)
+		profile, err := GetProfile(c, authFacebook, apiToken)
 		if err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 
-		uri, err := buildRedirect(c, Facebook, apiToken, email, database)
+		uri, err := buildRedirect(c, Facebook, apiToken, profile, database)
 		if err != nil {
 			return
 		}

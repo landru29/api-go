@@ -4,3 +4,4 @@ config.json
 api-go
 node_modules
 dist
+swagger-go

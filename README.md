@@ -8,3 +8,7 @@ Get the binarry of swagger here:
 
 Launch
 ``make swag``
+
+
+install jq
+``apt-get install jq``

@@ -14,6 +14,7 @@ type Choice struct {
 }
 
 // Model define a quizz question
+// swagger:model Quizz
 type Model struct {
     ID           bson.ObjectId `bson:"_id,omitempty"`
     Explaination string        `bson:"explaination"`

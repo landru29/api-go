@@ -52,8 +52,20 @@ func DefineRoutes() *gin.Engine {
 		})
 	})
 
+	router.Static("/doc", "./swagger/dist")
+
+	// @SubApi Quizz  [/quizz]
+	// @SubApi Public part of the quizz
 	quizzGroup := router.Group("/quizz")
 	{
+		// @Title Random quizz
+		// @Description Get random quizz questions
+		// @Accept json
+		// @Success 200 {object} string "Success"
+		// @Failure 401 {object} string "Access denied"
+		// @Failure 404 {object} string "Not Found"
+		// @Resource /
+		// @Router /quizz [get]
 		quizzGroup.GET("/", func(c *gin.Context) {
 			count, _ := c.Get("count")
 			results, err := quizz.RandomPublished(database, count.(int), 10)

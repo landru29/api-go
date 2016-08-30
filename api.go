@@ -1,3 +1,10 @@
+// @APIVersion 1.0.0
+// @APITitle Noopy API
+// @APIDescription Noopy Backend
+// @Contact cmeichel@free.fr
+// @TermsOfServiceUrl https://www.teamwork.com/termsofservice
+// @License BSD
+// @LicenseUrl http://opensource.org/licenses/BSD-2-Clause
 package main
 
 import (

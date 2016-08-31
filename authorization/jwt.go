@@ -58,6 +58,7 @@ func DecodeToken(tokenString string, db *mgo.Database) (dbToken token.Model, pro
 	}
 	if claims, ok := tokenJwt.Claims.(*TokenClaims); ok && tokenJwt.Valid {
 		if claims.Expiry > time.Now().Unix() {
+			fmt.Println("Connected")
 			profile.Email = claims.Email
 			profile.FirstName = claims.FirstName
 			profile.LastName = claims.LastName

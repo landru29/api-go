@@ -35,13 +35,23 @@
 
   <script type="text/javascript">
     $(function () {
-      var baseUrl = window.location.href.replace(/#.*$/, '');
-      var url = baseUrl + 'swagger.json';
-      /*if (url && url.length > 1) {
-        url = decodeURIComponent(url[1]);
-      } else {
-        url = "http://petstore.swagger.io/v2/swagger.json";
-    }*/
+        var baseUrl = window.location.href.replace(/#.*$/, '').replace(/\?.*$/, '');
+        var url = baseUrl + 'swagger.json';
+
+        // api url
+        var matcher = baseUrl.match(/https?:\/\/[^\/]*/);
+        var apiUrl = '';
+        if (matcher) {
+            apiUrl = matcher[0] + '/';
+        }
+
+        // get token
+        var token;
+        var queries = window.location.search.replace(/^\?/, '').split('&');
+        var queryToken = queries.filter(function(elt) { return elt.match(/^api-token=/)});
+        if (queryToken.length) {
+            token = queryToken[0].replace(/^api-token=/, '');
+        }
 
       hljs.configure({
         highlightSizeThreshold: 5000
@@ -56,8 +66,27 @@
         dom_id: "swagger-ui-container",
         supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
         onComplete: function(swaggerApi, swaggerUi){
+            /*if (token) {
+                $('#input_apiKey').change(function() {
+                  var key = $('#input_apiKey')[0].value;
+                  if(key && key.trim() != "") {
+                      var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization( "Authorization", "JWT " + token, "header" );
+                      window.swaggerUi.api.clientAuthorizations.add("bearer", apiKeyAuth);
+                  }
+                })
+            }*/
+
             $('span.logo__title').html('Noopy');
             $('a#logo').attr('href', baseUrl)
+            $('div#header div.swagger-ui-wrap').append(
+                '<div class="connect">' +
+                '  <a href="' + apiUrl + 'auth/facebook/login?redirect=' + encodeURIComponent(baseUrl) + '">' +
+                '    <img height="32px" src="images/facebook.png">' +
+                '  </a>' +
+                '  <a href="' + apiUrl + 'auth/google/login?redirect=' + encodeURIComponent(baseUrl) + '">' +
+                '    <img height="32px" src="images/google.png">' +
+                '  </a>' +
+                '</div>');
           /*if(typeof initOAuth == "function") {
             initOAuth({
               clientId: "your-client-id",
@@ -74,15 +103,18 @@
         }*/
         },
         onFailure: function(data) {
-          //log("Unable to Load SwaggerUI");
+
         },
         docExpansion: "none",
         jsonEditor: false,
         defaultModelRendering: 'schema',
         showRequestHeaders: false
       });
-
       window.swaggerUi.load();
+      if (token) {
+          var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization( "Authorization", "JWT " + token, "header" );
+          window.swaggerUi.api.clientAuthorizations.add("bearer", apiKeyAuth);
+      }
   });
   </script>
 </head>

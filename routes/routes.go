@@ -52,32 +52,23 @@ func DefineRoutes() *gin.Engine {
         })
     })
 
-    router.Static("/doc", "./swagger/dist")
+    router.Static("/doc", "./swagger")
 
-    // swagger:route GET /quizz get random quizz
-    //
-    // Get random questions from the quizz
-    //
-    // 		Consumes:
-    // 		- application/json
-    //
-    // 		Produces:
-    // 		- application/json
-    //
-    // 		Responses:
-    // 		default: genericError
-    // 		200: someResponse
-    // 		422: validationError
     quizzGroup := router.Group("/quizz")
     {
-        // @Title Random quizz
-        // @Description Get random quizz questions
-        // @Accept json
-        // @Success 200 {object} string "Success"
-        // @Failure 401 {object} string "Access denied"
-        // @Failure 404 {object} string "Not Found"
-        // @Resource /
-        // @Router /quizz [get]
+        // swagger:route GET /quizz quizz quizz
+        //
+        // Get random questions from the quizz
+        //
+        // 		Consumes:
+        // 		- application/json
+        //
+        // 		Produces:
+        // 		- application/json
+        //
+        // 		Responses:
+        // 		default: genericError
+        // 		200: someResponse
         quizzGroup.GET("/", func(c *gin.Context) {
             count, _ := c.Get("count")
             results, err := quizz.RandomPublished(database, count.(int), 10)

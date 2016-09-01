@@ -51,6 +51,8 @@
         var queryToken = queries.filter(function(elt) { return elt.match(/^api-token=/)});
         if (queryToken.length) {
             token = queryToken[0].replace(/^api-token=/, '');
+            $.cookies('token', token, 10);
+            window.location = baseUrl;
         }
 
       hljs.configure({
@@ -66,16 +68,6 @@
         dom_id: "swagger-ui-container",
         supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
         onComplete: function(swaggerApi, swaggerUi){
-            /*if (token) {
-                $('#input_apiKey').change(function() {
-                  var key = $('#input_apiKey')[0].value;
-                  if(key && key.trim() != "") {
-                      var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization( "Authorization", "JWT " + token, "header" );
-                      window.swaggerUi.api.clientAuthorizations.add("bearer", apiKeyAuth);
-                  }
-                })
-            }*/
-
             $('span.logo__title').html('Noopy');
             $('a#logo').attr('href', baseUrl)
             $('div#header div.swagger-ui-wrap').append(
@@ -87,20 +79,6 @@
                 '    <img height="32px" src="images/google.png">' +
                 '  </a>' +
                 '</div>');
-          /*if(typeof initOAuth == "function") {
-            initOAuth({
-              clientId: "your-client-id",
-              clientSecret: "your-client-secret-if-required",
-              realm: "your-realms",
-              appName: "your-app-name",
-              scopeSeparator: " ",
-              additionalQueryStringParams: {}
-            });
-          }
-
-          if(window.SwaggerTranslator) {
-            window.SwaggerTranslator.translate();
-        }*/
         },
         onFailure: function(data) {
 
@@ -111,6 +89,7 @@
         showRequestHeaders: false
       });
       window.swaggerUi.load();
+      token = $.cookies('token');
       if (token) {
           var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization( "Authorization", "JWT " + token, "header" );
           window.swaggerUi.api.clientAuthorizations.add("bearer", apiKeyAuth);

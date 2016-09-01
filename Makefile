@@ -6,3 +6,6 @@ swag:
 
 install:
 	bash ./get-swag.sh
+
+build: swag
+	go build

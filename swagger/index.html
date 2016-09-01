@@ -3,30 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <title>Swagger UI</title>
-  <link rel="icon" type="image/png" href="images/favicon-32x32.png" sizes="32x32" />
-  <link rel="icon" type="image/png" href="images/favicon-16x16.png" sizes="16x16" />
-  <link href='css/typography.css' media='screen' rel='stylesheet' type='text/css'/>
-  <link href='css/reset.css' media='screen' rel='stylesheet' type='text/css'/>
-  <link href='css/screen.css' media='screen' rel='stylesheet' type='text/css'/>
-  <link href='css/reset.css' media='print' rel='stylesheet' type='text/css'/>
-  <link href='css/print.css' media='print' rel='stylesheet' type='text/css'/>
+  <link rel="icon"       type="image/png" sizes="32x32"  href="images/favicon-32x32.png"/>
+  <link rel="icon"       type="image/png" sizes="16x16"  href="images/favicon-16x16.png"/>
+  <link rel='stylesheet' type='text/css'  media='screen' href='css/typography.css'/>
+  <link rel='stylesheet' type='text/css'  media='screen' href='css/reset.css'/>
+  <link rel='stylesheet' type='text/css'  media='screen' href='css/screen.css'/>
+  <link rel='stylesheet' type='text/css'  media='print'  href='css/reset.css'/>
+  <link rel='stylesheet' type='text/css'  media='print'  href='css/print.css'/>
+  <link rel='stylesheet' type='text/css'  media='screen' href='css/noopy.css'/>
 
-  <link href='css/noopy.css' media='screen' rel='stylesheet' type='text/css'/>
-
-  <script src='lib/object-assign-pollyfill.js' type='text/javascript'></script>
-  <script src='lib/jquery-1.8.0.min.js' type='text/javascript'></script>
-  <script src='lib/jquery.slideto.min.js' type='text/javascript'></script>
-  <script src='lib/jquery.wiggle.min.js' type='text/javascript'></script>
-  <script src='lib/jquery.ba-bbq.min.js' type='text/javascript'></script>
-  <script src='lib/handlebars-4.0.5.js' type='text/javascript'></script>
-  <script src='lib/lodash.min.js' type='text/javascript'></script>
-  <script src='lib/backbone-min.js' type='text/javascript'></script>
-  <script src='swagger-ui.js' type='text/javascript'></script>
-  <script src='lib/highlight.9.1.0.pack.js' type='text/javascript'></script>
-  <script src='lib/highlight.9.1.0.pack_extended.js' type='text/javascript'></script>
-  <script src='lib/jsoneditor.min.js' type='text/javascript'></script>
-  <script src='lib/marked.js' type='text/javascript'></script>
-  <script src='lib/swagger-oauth.js' type='text/javascript'></script>
+  <script type='text/javascript' src='lib/object-assign-pollyfill.js'></script>
+  <script type='text/javascript' src='lib/jquery-1.8.0.min.js'></script>
+  <script type='text/javascript' src='lib/jquery.cookie.js'></script>
+  <script type='text/javascript' src='lib/jquery.slideto.min.js'></script>
+  <script type='text/javascript' src='lib/jquery.wiggle.min.js'></script>
+  <script type='text/javascript' src='lib/jquery.ba-bbq.min.js'></script>
+  <script type='text/javascript' src='lib/handlebars-4.0.5.js'></script>
+  <script type='text/javascript' src='lib/lodash.min.js'></script>
+  <script type='text/javascript' src='lib/backbone-min.js'></script>
+  <script type='text/javascript' src='swagger-ui.js'></script>
+  <script type='text/javascript' src='lib/highlight.9.1.0.pack.js'></script>
+  <script type='text/javascript' src='lib/highlight.9.1.0.pack_extended.js'></script>
+  <script type='text/javascript' src='lib/jsoneditor.min.js'></script>
+  <script type='text/javascript' src='lib/marked.js'></script>
+  <script type='text/javascript' src='lib/swagger-oauth.js'></script>
 
   <!-- Some basic translations -->
   <!-- <script src='lang/translator.js' type='text/javascript'></script> -->
@@ -35,8 +35,14 @@
 
   <script type="text/javascript">
     $(function () {
+
         var baseUrl = window.location.href.replace(/#.*$/, '').replace(/\?.*$/, '');
         var url = baseUrl + 'swagger.json';
+
+        window.disconnect = function () {
+            $.removeCookie('token');
+            window.location.href = baseUrl;
+        };
 
         // api url
         var matcher = baseUrl.match(/https?:\/\/[^\/]*/);
@@ -51,6 +57,8 @@
         var queryToken = queries.filter(function(elt) { return elt.match(/^api-token=/)});
         if (queryToken.length) {
             token = queryToken[0].replace(/^api-token=/, '');
+            $.cookie("token", token, { expires : 10 });
+            window.location.href = baseUrl;
         }
 
       hljs.configure({
@@ -66,16 +74,6 @@
         dom_id: "swagger-ui-container",
         supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
         onComplete: function(swaggerApi, swaggerUi){
-            /*if (token) {
-                $('#input_apiKey').change(function() {
-                  var key = $('#input_apiKey')[0].value;
-                  if(key && key.trim() != "") {
-                      var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization( "Authorization", "JWT " + token, "header" );
-                      window.swaggerUi.api.clientAuthorizations.add("bearer", apiKeyAuth);
-                  }
-                })
-            }*/
-
             $('span.logo__title').html('Noopy');
             $('a#logo').attr('href', baseUrl)
             $('div#header div.swagger-ui-wrap').append(
@@ -86,21 +84,10 @@
                 '  <a href="' + apiUrl + 'auth/google/login?redirect=' + encodeURIComponent(baseUrl) + '">' +
                 '    <img height="32px" src="images/google.png">' +
                 '  </a>' +
+                '  <a href="#" onclick="disconnect()">' +
+                '    <img height="32px" src="images/disconnect.png">' +
+                '  </a>' +
                 '</div>');
-          /*if(typeof initOAuth == "function") {
-            initOAuth({
-              clientId: "your-client-id",
-              clientSecret: "your-client-secret-if-required",
-              realm: "your-realms",
-              appName: "your-app-name",
-              scopeSeparator: " ",
-              additionalQueryStringParams: {}
-            });
-          }
-
-          if(window.SwaggerTranslator) {
-            window.SwaggerTranslator.translate();
-        }*/
         },
         onFailure: function(data) {
 
@@ -111,6 +98,7 @@
         showRequestHeaders: false
       });
       window.swaggerUi.load();
+      token = $.cookie("token");
       if (token) {
           var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization( "Authorization", "JWT " + token, "header" );
           window.swaggerUi.api.clientAuthorizations.add("bearer", apiKeyAuth);

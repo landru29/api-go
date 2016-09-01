@@ -7,3 +7,7 @@ div.connect {
     margin-right: 20px;
     float: right;
 }
+
+div.connect a {
+    text-decoration: none;
+}

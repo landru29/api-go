@@ -1,9 +1,9 @@
-div#header div.swagger-ui-wrap form#api_selector {
-    display: none;
-}
-
 div.connect {
     display: inline-block;
     margin-right: 20px;
     float: right;
+}
+
+div.connect a {
+    text-decoration: none;
 }

@@ -71,7 +71,7 @@ func DefineRoutes() *gin.Engine {
         // @Title Read
         // @Description Get Random questions
         // @Accept application/json
-        // @Param limit query int false "Max questions"
+        // @Param limit query integer false "Max questions"
         // @Success 200 {object} string "Success"
         // @Resource /quizz
         // @Router / [get]

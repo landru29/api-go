@@ -11,6 +11,7 @@ import (
     "github.com/landru29/api-go/middleware"
     "github.com/landru29/api-go/model/quizz"
     "github.com/landru29/api-go/mongo"
+    "github.com/itsjamie/gin-cors"
 )
 
 // GetEmail get the email address from third party
@@ -43,6 +44,14 @@ func DefineRoutes() *gin.Engine {
     // Middlewares
     router.Use(middleware.PaginationMiddleware())
     router.Use(middleware.AuthorizationMiddleware(database))
+    router.Use(cors.Middleware(cors.Config{
+        Origins:        "*",
+        Methods:        "GET, PUT, POST, DELETE",
+        RequestHeaders: "Origin, Authorization, Content-Type",
+        ExposedHeaders: "",
+        Credentials: true,
+        ValidateHeaders: false,
+    }))
 
     router.LoadHTMLGlob("./templates/*")
 
@@ -54,24 +63,18 @@ func DefineRoutes() *gin.Engine {
 
     router.Static("/doc", "./swagger")
 
+
+    // @SubApi Quizz [/quizz]
+    // @SubApi Roller Derby Quizz resource [/quizz]
     quizzGroup := router.Group("/quizz")
     {
-        // swagger:route GET /quizz quizz quizz
-        //
-        // Get random questions from the quizz
-        //
-        // 		Consumes:
-        // 		- application/json
-        //
-        // 		Produces:
-        // 		- application/json
-        //
-        // 		Responses:
-        // 		default: genericError
-        // 		200: someResponse
-        //
-        // 		parameters:
-        // 		- name: counter
+        // @Title Read
+        // @Description Get Random questions
+        // @Accept application/json
+        // @Param limit query int false "Max questions"
+        // @Success 200 {object} string "Success"
+        // @Resource /quizz
+        // @Router / [get]
         quizzGroup.GET("/", func(c *gin.Context) {
             count, _ := c.Get("count")
             results, err := quizz.RandomPublished(database, count.(int), 10)

@@ -4,10 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/landru29/api-go/model/beer"
+	"github.com/landru29/api-go/mongo"
 )
 
 func beerRoutes(router *gin.Engine) {
-	//database := mongo.GetMongoDatabase()
+	database := mongo.GetMongoDatabase()
 
 	// @SubApi Beer [/beer]
 	// @SubApi Beer resource resource [/beer]
@@ -22,9 +24,18 @@ func beerRoutes(router *gin.Engine) {
 		// @Resource /beer
 		// @Router / [get]
 		beerRecipeGroup.GET("/", func(c *gin.Context) {
-			/*count, _ := c.Get("count")*/
-			content := gin.H{"message": "Not implemented yet"}
-			c.JSON(http.StatusOK, content)
+			count, _ := c.Get("count")
+			skip, _ := c.Get("skip")
+			recipes, err := beer.GetAllRecipes(database, skip.(int), count.(int))
+			if err != nil {
+
+			}
+			if err != nil {
+				content := gin.H{"message": "Error while reading database"}
+				c.JSON(http.StatusServiceUnavailable, content)
+			} else {
+				c.JSON(http.StatusOK, recipes)
+			}
 		})
 	}
 }

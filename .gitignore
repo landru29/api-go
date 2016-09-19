@@ -5,4 +5,3 @@ api-go
 node_modules
 dist
 swagger-go
-swagger.json

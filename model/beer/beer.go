@@ -73,3 +73,17 @@ func GetAllRecipes(db *mgo.Database, skip int, count int) (results []Model, err 
 	err = getCollection(db).Find(bson.M{}).Skip(skip).Limit(count).All(&results)
 	return
 }
+
+// GetAllRecipesByUser function get all Recipes for a given user
+func GetAllRecipesByUser(db *mgo.Database, userID string, skip int, count int) (results []Model, err error) {
+	results = []Model{}
+	err = getCollection(db).Find(
+		bson.M{
+			"user": bson.M{
+				"$in": []string{
+					userID,
+				},
+			},
+		}).Skip(skip).Limit(count).All(&results)
+	return
+}

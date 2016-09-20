@@ -8,11 +8,12 @@ import (
 // Model define a quizz question
 type Model struct {
 	ID         bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Name       string        `bson:"name" json:"name"`
-	CreatedAt  float64       `bson:"createdAt" json:"createdAt"`
-	ModifiedAt float64       `bson:"modifiedAt" json:"modifiedAt"`
-	Date       float64       `bson:"date" json:"date"`
-	Steps      []Step        `bson:"steps" json:"steps,omitempty"`
+	User       []string      `bson:"user" json:"-"`
+	Name       string        `bson:"name"          json:"name"`
+	CreatedAt  float64       `bson:"createdAt"     json:"createdAt"`
+	ModifiedAt float64       `bson:"modifiedAt"    json:"modifiedAt"`
+	Date       float64       `bson:"date"          json:"date"`
+	Steps      []Step        `bson:"steps"         json:"steps,omitempty"`
 }
 
 // Unit defines a unit

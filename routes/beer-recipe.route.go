@@ -45,21 +45,26 @@ func beerRoutes(router *gin.Engine) {
 		// @Title Add recipe
 		// @Description Add a new recipe
 		// @Accept application/json
-		// @Param name  body string true "Name of the recipe"
-		// @Param date  body string true "Date of the recipe"
-		// @Param steps body string true "Array of steps"
+		// @Param recipe body string true "recipe"
 		// @Success 200 {object} string "Success"
 		// @Resource /beer
 		// @Router / [post]
 		beerRecipeGroup.POST("/", func(c *gin.Context) {
+			recipe := beer.Model{}
 			if userID, ok := GetID(c); !ok {
 				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
 			} else {
-				fmt.Println(userID)
-				content := gin.H{"message": "Not implemented yet"}
-				c.JSON(http.StatusServiceUnavailable, content)
+				if err := c.BindJSON(&recipe); err == nil {
+					recipe.User = []string{userID}
+					fmt.Println(recipe)
+					if result, _, err := recipe.Save(database); err == nil {
+						c.JSON(http.StatusOK, result)
+					} else {
+						content := gin.H{"message": "Could not save"}
+						c.JSON(http.StatusServiceUnavailable, content)
+					}
+				}
 			}
-
 		})
 
 		// @Title Add recipe

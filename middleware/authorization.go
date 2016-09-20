@@ -3,9 +3,6 @@ package middleware
 import (
 	"net/http"
 	"regexp"
-	"time"
-
-	"golang.org/x/oauth2"
 
 	mgo "gopkg.in/mgo.v2"
 
@@ -21,7 +18,8 @@ func AuthorizationMiddleware(db *mgo.Database) gin.HandlerFunc {
 		matching := re.FindStringSubmatch(jwtStr)
 		if len(matching) > 0 {
 			tokenString := matching[1]
-			dbToken, profile, err := authorization.DecodeToken(tokenString, db)
+			//dbToken, profile, err := authorization.DecodeToken(tokenString, db)
+			_, profile, err := authorization.DecodeToken(tokenString, db)
 			if err != nil {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"message": err.Error(),
@@ -29,7 +27,7 @@ func AuthorizationMiddleware(db *mgo.Database) gin.HandlerFunc {
 				return
 			}
 			c.Set("user", profile)
-			myToken := oauth2.Token{
+			/*myToken := oauth2.Token{
 				AccessToken:  dbToken.AccessToken,
 				TokenType:    dbToken.TokenType,
 				RefreshToken: dbToken.RefreshToken,
@@ -41,11 +39,11 @@ func AuthorizationMiddleware(db *mgo.Database) gin.HandlerFunc {
 				oauthConf = authorization.GetFacebookOAuth()
 				c.Set("oauthConfig", *oauthConf)
 				c.Set("oauthToken", myToken)
-				/*email, err := authorization.GetEmail(c, oauthConf, &myToken)
+				email, err := authorization.GetEmail(c, oauthConf, &myToken)
 				c.Set("verified", len(email) > 0)
 				if err == nil {
 					c.Set("email", email)
-				}*/
+				}
 			case authorization.Google:
 				oauthConf = authorization.GetGoogleOAuth()
 				c.Set("oauthConfig", *oauthConf)
@@ -54,8 +52,8 @@ func AuthorizationMiddleware(db *mgo.Database) gin.HandlerFunc {
 				c.Set("verified", len(email) > 0)
 				if err == nil {
 					c.Set("email", email)
-				}*/
-			}
+				}
+			}*/
 			c.Next()
 			return
 		}

@@ -14,6 +14,7 @@ import (
 
 // TokenClaims is the jwt model for the token
 type TokenClaims struct {
+	ID        string `json:"id"`
 	Token     string `json:"token"`
 	Expiry    int64  `json:"expiry"`
 	Email     string `json:"email"`
@@ -39,6 +40,7 @@ func EncodeToken(savedToken token.Model) (tokenString string, err error) {
 		Email:     savedToken.Email,
 		FirstName: savedToken.FirstName,
 		LastName:  savedToken.LastName,
+		ID:        savedToken.Identifier,
 	}
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, getMapClaim(jsonToken))
@@ -62,6 +64,7 @@ func DecodeToken(tokenString string, db *mgo.Database) (dbToken token.Model, pro
 			profile.Email = claims.Email
 			profile.FirstName = claims.FirstName
 			profile.LastName = claims.LastName
+			profile.ID = claims.ID
 		} else {
 			err = errors.New("Expired token")
 			return

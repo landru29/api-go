@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,8 @@ func beerRoutes(router *gin.Engine) {
 		beerRecipeGroup.GET("/", func(c *gin.Context) {
 			count, _ := c.Get("count")
 			skip, _ := c.Get("skip")
+			userID, _ := GetID(c)
+			fmt.Println(userID)
 			recipes, err := beer.GetAllRecipes(database, skip.(int), count.(int))
 			if err != nil {
 

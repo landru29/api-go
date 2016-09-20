@@ -39,6 +39,7 @@ func buildRedirect(c *gin.Context, origin string, tokenObj *oauth2.Token, profil
 		FirstName:    profile.FirstName,
 		LastName:     profile.LastName,
 		Origin:       origin,
+		Identifier:   profile.Source + profile.ID,
 	}
 
 	savedToken, err := dbToken.Save(db)

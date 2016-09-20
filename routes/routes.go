@@ -1,10 +1,7 @@
 package routes
 
 import (
-	"errors"
 	"net/http"
-
-	"golang.org/x/oauth2"
 
 	"github.com/gin-gonic/gin"
 	"github.com/itsjamie/gin-cors"
@@ -14,17 +11,21 @@ import (
 )
 
 // GetEmail get the email address from third party
-func GetEmail(c *gin.Context) (email string, err error) {
-	err = errors.New("No OAuth token")
+func GetEmail(c *gin.Context) (email string, ok bool) {
 	email = ""
-	oAuthConfig, ok := c.Get("oauthConfig")
+	user, ok := c.Get("user")
 	if ok == true {
-		oAuthToken, ok := c.Get("oauthToken")
-		if ok == true {
-			authConfig := oAuthConfig.(oauth2.Config)
-			authToken := oAuthToken.(oauth2.Token)
-			email, err = authorization.GetEmail(c, &authConfig, &authToken)
-		}
+		email = user.(authorization.Profile).Email
+	}
+	return
+}
+
+// GetID get the user ID from jwt
+func GetID(c *gin.Context) (ID string, ok bool) {
+	ID = ""
+	user, ok := c.Get("user")
+	if ok == true {
+		ID = user.(authorization.Profile).ID
 	}
 	return
 }

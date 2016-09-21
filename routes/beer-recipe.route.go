@@ -73,13 +73,29 @@ func beerRoutes(router *gin.Engine) {
 		// @Description Update a recipe
 		// @Accept application/json
 		// @param recipeId path string true "Identifier of the recipe"
-		// @Param name     body string true "Name of the recipe"
-		// @Param date     body string true "Date of the recipe"
-		// @Param steps    body string true "Array of steps"
+		// @Param recipe   body string true "recipe"
 		// @Success 200 {object} string "Success"
 		// @Resource /beer
 		// @Router /:recipeId [put]
 		beerRecipeGroup.PUT("/:recipeId", func(c *gin.Context) {
+			recipeID := c.Param("recipeId")
+			if userID, ok := GetID(c); !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
+			} else {
+				fmt.Println(recipeID, userID)
+				c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Not implemented yet"})
+			}
+
+		})
+
+		// @Title Delete recipe
+		// @Description Delete a recipe
+		// @Accept application/json
+		// @param recipeId path string true "Identifier of the recipe"
+		// @Success 200 {object} string "Success"
+		// @Resource /beer
+		// @Router /:recipeId [delete]
+		beerRecipeGroup.DELETE("/:recipeId", func(c *gin.Context) {
 			recipeID := c.Param("recipeId")
 			if userID, ok := GetID(c); !ok {
 				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
@@ -147,6 +163,24 @@ func beerRoutes(router *gin.Engine) {
 				content := gin.H{"message": "Not implemented yet"}
 				c.JSON(http.StatusServiceUnavailable, content)
 			}
+		})
+
+		// @Title Delete step
+		// @Description Delete a step from a recipe
+		// @Accept application/json
+		// @param recipeId path string true "Identifier of the recipe"
+		// @Success 200 {object} string "Success"
+		// @Resource /beer
+		// @Router /:recipeId/step [delete]
+		beerRecipeGroup.DELETE("/:recipeId/step", func(c *gin.Context) {
+			recipeID := c.Param("recipeId")
+			if userID, ok := GetID(c); !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
+			} else {
+				fmt.Println(recipeID, userID)
+				c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Not implemented yet"})
+			}
+
 		})
 	}
 }

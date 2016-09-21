@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/landru29/api-go/model"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -19,6 +20,7 @@ type FacebookModel struct {
 
 // Model define a user
 type Model struct {
+	model.Dater
 	ID           bson.ObjectId `bson:"_id"`
 	Email        string        `bson:"email"`
 	Password     string        `bson:"password"`
@@ -28,8 +30,6 @@ type Model struct {
 	Verified     bool          `bson:"verified"`
 	Google       GoogleModel   `bson:"google"`
 	Facebook     FacebookModel `bson:"facebook"`
-	CreatedAt    string        `bson:"createdAt"`
-	UpdatedAt    string        `bson:"updatedAt"`
 	Name         string        `bson:"name"`
 }
 

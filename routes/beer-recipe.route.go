@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/landru29/api-go/model/beer"
 	"github.com/landru29/api-go/mongo"
+	uuid "github.com/nu7hatch/gouuid"
 )
 
 func beerRoutes(router *gin.Engine) {
@@ -33,8 +34,7 @@ func beerRoutes(router *gin.Engine) {
 			} else {
 				recipes, err := beer.GetAllRecipesByUser(database, userID, skip.(int), count.(int))
 				if err != nil {
-					content := gin.H{"message": "Error while reading database"}
-					c.JSON(http.StatusServiceUnavailable, content)
+					c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Error while reading database"})
 				} else {
 					c.JSON(http.StatusOK, recipes)
 				}
@@ -50,18 +50,20 @@ func beerRoutes(router *gin.Engine) {
 		// @Resource /beer
 		// @Router / [post]
 		beerRecipeGroup.POST("/", func(c *gin.Context) {
-			recipe := beer.Model{}
 			if userID, ok := GetID(c); !ok {
 				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
 			} else {
-				if err := c.BindJSON(&recipe); err == nil {
-					recipe.User = []string{userID}
-					fmt.Println(recipe)
+				recipePost := beer.RecipePost{}
+				if err := c.BindJSON(&recipePost); err == nil {
+					recipe := beer.Recipe{
+						User: []string{userID},
+						Name: recipePost.Name,
+						Date: recipePost.Date,
+					}
 					if result, _, err := recipe.Save(database); err == nil {
 						c.JSON(http.StatusOK, result)
 					} else {
-						content := gin.H{"message": "Could not save"}
-						c.JSON(http.StatusServiceUnavailable, content)
+						c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Could not save"})
 					}
 				}
 			}
@@ -83,8 +85,7 @@ func beerRoutes(router *gin.Engine) {
 				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
 			} else {
 				fmt.Println(recipeID, userID)
-				content := gin.H{"message": "Not implemented yet"}
-				c.JSON(http.StatusServiceUnavailable, content)
+				c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Not implemented yet"})
 			}
 
 		})
@@ -99,13 +100,32 @@ func beerRoutes(router *gin.Engine) {
 		// @Router /:recipeId/step [post]
 		beerRecipeGroup.POST("/:recipeId/step", func(c *gin.Context) {
 			recipeID := c.Param("recipeId")
-			//recipe := beer.Model{}
 			if userID, ok := GetID(c); !ok {
 				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
 			} else {
-				fmt.Println(recipeID, userID)
-				content := gin.H{"message": "Not implemented yet"}
-				c.JSON(http.StatusServiceUnavailable, content)
+				if recipe, err := beer.GetRecipe(database, recipeID, userID); err == nil {
+					stepPost := beer.StepPost{}
+					if err := c.BindJSON(&stepPost); err == nil {
+						if UUID, err := uuid.NewV4(); err == nil {
+							step := beer.Step{
+								Name:        stepPost.Name,
+								Lasting:     stepPost.Lasting,
+								Temperature: stepPost.Temperature,
+								UUID:        UUID.String(),
+							}
+							recipe.Steps = append(recipe.Steps, step)
+							if result, _, err := recipe.Save(database); err == nil {
+								c.JSON(http.StatusOK, result)
+							} else {
+								c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Could not save"})
+							}
+						} else {
+							c.JSON(http.StatusInternalServerError, gin.H{"message": "Something went wrong. Please try again."})
+						}
+					}
+				} else {
+					c.JSON(http.StatusNotFound, gin.H{"message": "Recipe not found"})
+				}
 			}
 		})
 

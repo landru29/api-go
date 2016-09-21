@@ -1,19 +1,25 @@
 package beer
 
 import (
+	"github.com/landru29/api-go/model"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
-// Model define a quizz question
-type Model struct {
-	ID         bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	User       []string      `bson:"user" json:"-"`
-	Name       string        `bson:"name"          json:"name"`
-	CreatedAt  float64       `bson:"createdAt"     json:"createdAt"`
-	ModifiedAt float64       `bson:"modifiedAt"    json:"modifiedAt"`
-	Date       float64       `bson:"date"          json:"date"`
-	Steps      []Step        `bson:"steps"         json:"steps,omitempty"`
+// RecipePost define to model of a new created recipe
+type RecipePost struct {
+	Name string  `bson:"name"          json:"name"`
+	Date float64 `bson:"date"          json:"date"`
+}
+
+// Recipe define a quizz question
+type Recipe struct {
+	model.Dater
+	Name  string        `bson:"name"          json:"name"`
+	Date  float64       `bson:"date"          json:"date"`
+	ID    bson.ObjectId `bson:"_id,omitempty" json:"id"`
+	User  []string      `bson:"user" json:"-"`
+	Steps []Step        `bson:"steps"         json:"steps,omitempty"`
 }
 
 // Unit defines a unit
@@ -28,12 +34,19 @@ type Physical struct {
 	Unit  Unit    `bson:"unit" json:"unit"`
 }
 
+// StepPost define to model of a new created step
+type StepPost struct {
+	Name        string   `bson:"name" json:"name"`
+	Lasting     float64  `bson:"lasting" json:"lasting"`
+	Temperature Physical `bson:"temperature" json:"temperature"`
+}
+
 // Step defines a brewing step
 type Step struct {
-	UUID        string       `bson:"_uuid" json:"_uuid"`
 	Name        string       `bson:"name" json:"name"`
 	Lasting     float64      `bson:"lasting" json:"lasting"`
 	Temperature Physical     `bson:"temperature" json:"temperature"`
+	UUID        string       `bson:"_uuid" json:"_uuid"`
 	Ingredients []Ingredient `bson:"ingredients" json:"ingredients,omitempty"`
 }
 
@@ -58,7 +71,8 @@ func getCollection(db *mgo.Database) *mgo.Collection {
 }
 
 // Save function save a recipe
-func (data Model) Save(db *mgo.Database) (result Model, info *mgo.ChangeInfo, err error) {
+func (data Recipe) Save(db *mgo.Database) (result Recipe, info *mgo.ChangeInfo, err error) {
+	data.UpdateDates()
 	if data.ID != "" {
 		info, err = getCollection(db).UpsertId(data.ID, bson.M{"$set": data})
 	} else {
@@ -68,16 +82,31 @@ func (data Model) Save(db *mgo.Database) (result Model, info *mgo.ChangeInfo, er
 	return
 }
 
+// GetRecipe find a unique recipe by ID
+func GetRecipe(db *mgo.Database, ID string, userID string) (result Recipe, err error) {
+
+	err = getCollection(db).Find(
+		bson.M{
+			"_id": bson.ObjectIdHex(ID),
+			"user": bson.M{
+				"$in": []string{
+					userID,
+				},
+			},
+		}).One(&result)
+	return
+}
+
 // GetAllRecipes function get all Recipes
-func GetAllRecipes(db *mgo.Database, skip int, count int) (results []Model, err error) {
-	results = []Model{}
+func GetAllRecipes(db *mgo.Database, skip int, count int) (results []Recipe, err error) {
+	results = []Recipe{}
 	err = getCollection(db).Find(bson.M{}).Skip(skip).Limit(count).All(&results)
 	return
 }
 
 // GetAllRecipesByUser function get all Recipes for a given user
-func GetAllRecipesByUser(db *mgo.Database, userID string, skip int, count int) (results []Model, err error) {
-	results = []Model{}
+func GetAllRecipesByUser(db *mgo.Database, userID string, skip int, count int) (results []Recipe, err error) {
+	results = []Recipe{}
 	err = getCollection(db).Find(
 		bson.M{
 			"user": bson.M{

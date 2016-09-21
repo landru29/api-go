@@ -3,6 +3,8 @@ package quizz
 import (
 	"math/rand"
 
+	"github.com/landru29/api-go/model"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -16,6 +18,7 @@ type Choice struct {
 // Model define a quizz question
 // swagger:model Quizz
 type Model struct {
+	model.Dater
 	ID           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Explaination string        `bson:"explaination" json:"explaination"`
 	Image        string        `bson:"image,omitempty" json:"image,omitempty"`
@@ -24,8 +27,6 @@ type Model struct {
 	Tags         string        `bson:"tags" json:"tags"`
 	Text         string        `bson:"text" json:"text"`
 	Choices      []Choice      `bson:"choices" json:"choices"`
-	CreatedAt    string        `bson:"createdAt" json:"createdAt"`
-	UpdatedAt    string        `bson:"updatedAt" json:"updatedAt"`
 }
 
 func getCollection(db *mgo.Database) *mgo.Collection {

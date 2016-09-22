@@ -69,7 +69,7 @@ func beerRoutes(router *gin.Engine) {
 			}
 		})
 
-		// @Title Add recipe
+		// @Title Update recipe
 		// @Description Update a recipe
 		// @Accept application/json
 		// @param recipeId path string true "Identifier of the recipe"
@@ -77,6 +77,7 @@ func beerRoutes(router *gin.Engine) {
 		// @Success 200 {object} string "Success"
 		// @Resource /beer
 		// @Router /:recipeId [put]
+		// @Deprecated
 		beerRecipeGroup.PUT("/:recipeId", func(c *gin.Context) {
 			recipeID := c.Param("recipeId")
 			if userID, ok := GetID(c); !ok {
@@ -95,6 +96,7 @@ func beerRoutes(router *gin.Engine) {
 		// @Success 200 {object} string "Success"
 		// @Resource /beer
 		// @Router /:recipeId [delete]
+		// @Deprecated
 		beerRecipeGroup.DELETE("/:recipeId", func(c *gin.Context) {
 			recipeID := c.Param("recipeId")
 			if userID, ok := GetID(c); !ok {
@@ -145,15 +147,17 @@ func beerRoutes(router *gin.Engine) {
 			}
 		})
 
-		// @Title Delete step
-		// @Description Add a new step to the recipe
+		// @Title Update step
+		// @Description Update a step in the recipe
 		// @Accept application/json
 		// @param recipeId path string true "Identifier of the recipe"
 		// @param stepId path string true "Identifier of the step"
+		// @Param step     body string true "Step"
 		// @Success 200 {object} string "Success"
 		// @Resource /beer
-		// @Router /:recipeId/step [post]
-		beerRecipeGroup.DELETE("/:recipeId/step/:stepId", func(c *gin.Context) {
+		// @Router /:recipeId/step/:stepId [put]
+		// @Deprecated
+		beerRecipeGroup.PUT("/:recipeId/step/:stepId", func(c *gin.Context) {
 			recipeID := c.Param("recipeId")
 			stepID := c.Param("stepId")
 			if userID, ok := GetID(c); !ok {
@@ -169,15 +173,87 @@ func beerRoutes(router *gin.Engine) {
 		// @Description Delete a step from a recipe
 		// @Accept application/json
 		// @param recipeId path string true "Identifier of the recipe"
+		// @param stepId   path string true "Identifier of the step"
 		// @Success 200 {object} string "Success"
 		// @Resource /beer
-		// @Router /:recipeId/step [delete]
-		beerRecipeGroup.DELETE("/:recipeId/step", func(c *gin.Context) {
+		// @Router /:recipeId/step/:stepId [delete]
+		// @Deprecated
+		beerRecipeGroup.DELETE("/:recipeId/step/:stepId", func(c *gin.Context) {
 			recipeID := c.Param("recipeId")
+			stepID := c.Param("stepId")
 			if userID, ok := GetID(c); !ok {
 				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
 			} else {
-				fmt.Println(recipeID, userID)
+				fmt.Println(recipeID, stepID, userID)
+				c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Not implemented yet"})
+			}
+
+		})
+
+		// @Title Add Ingredient
+		// @Description Add a new ingredient in the step
+		// @Accept application/json
+		// @param recipeId path string true "Identifier of the recipe"
+		// @param stepId   path string true "Identifier of the step"
+		// @Param ingredient     body string true "Ingredient"
+		// @Success 200 {object} string "Success"
+		// @Resource /beer
+		// @Router /:recipeId/step/:stepId/ingredient [post]
+		// @Deprecated
+		beerRecipeGroup.POST("/:recipeId/step/:stepId/ingredient", func(c *gin.Context) {
+			recipeID := c.Param("recipeId")
+			stepID := c.Param("stepId")
+			if userID, ok := GetID(c); !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
+			} else {
+				fmt.Println(recipeID, stepID, userID)
+				content := gin.H{"message": "Not implemented yet"}
+				c.JSON(http.StatusServiceUnavailable, content)
+			}
+		})
+
+		// @Title Update ingredient
+		// @Description Update an ingredient in the step
+		// @Accept application/json
+		// @param recipeId     path string true "Identifier of the recipe"
+		// @param stepId       path string true "Identifier of the step"
+		// @param ingredientId path string true "Identifier of the ingredient"
+		// @Param ingredient     body string true "Step"
+		// @Success 200 {object} string "Success"
+		// @Resource /beer
+		// @Router /:recipeId/step/:stepId/ingredient/:ingredientId [put]
+		// @Deprecated
+		beerRecipeGroup.PUT("/:recipeId/step/:stepId/ingredient/:ingredientId", func(c *gin.Context) {
+			recipeID := c.Param("recipeId")
+			stepID := c.Param("stepId")
+			ingredientID := c.Param("ingredientId")
+			if userID, ok := GetID(c); !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
+			} else {
+				fmt.Println(recipeID, stepID, ingredientID, userID)
+				content := gin.H{"message": "Not implemented yet"}
+				c.JSON(http.StatusServiceUnavailable, content)
+			}
+		})
+
+		// @Title Delete step
+		// @Description Delete an ingredient from a step
+		// @Accept application/json
+		// @param recipeId     path string true "Identifier of the recipe"
+		// @param stepId       path string true "Identifier of the step"
+		// @param ingredientId path string true "Identifier of the ingredient"
+		// @Success 200 {object} string "Success"
+		// @Resource /beer
+		// @Router /:recipeId/step/:stepId/ingredient/:ingredientId [delete]
+		// @Deprecated
+		beerRecipeGroup.DELETE("/:recipeId/step/:stepId/ingredient/:ingredientId", func(c *gin.Context) {
+			recipeID := c.Param("recipeId")
+			stepID := c.Param("stepId")
+			ingredientID := c.Param("ingredientId")
+			if userID, ok := GetID(c); !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
+			} else {
+				fmt.Println(recipeID, stepID, ingredientID, userID)
 				c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Not implemented yet"})
 			}
 

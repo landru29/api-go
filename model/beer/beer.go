@@ -1,6 +1,8 @@
 package beer
 
 import (
+	"errors"
+
 	"github.com/landru29/api-go/model"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -96,6 +98,40 @@ func DeleteByID(db *mgo.Database, ID string, userID string) (err error) {
 	return
 }
 
+// DeleteStepByID delete a step from a recipe
+func DeleteStepByID(db *mgo.Database, recipeID string, stepID string, userID string) (err error) {
+	if recipe, err := GetRecipe(db, recipeID, userID); err == nil {
+		steps := recipe.Steps
+		recipe.Steps = []Step{}
+		for _, step := range steps {
+			if step.UUID != stepID {
+				recipe.Steps = append(recipe.Steps, step)
+			}
+		}
+		_, _, err = recipe.Save(db)
+	}
+	return
+}
+
+// DeleteIngredientByID delete an ingredient from the step
+func DeleteIngredientByID(db *mgo.Database, recipeID string, stepID string, ingredientID string, userID string) (err error) {
+	if recipe, err := GetRecipe(db, recipeID, userID); err == nil {
+		if step, ok := findStepByID(recipe.Steps, stepID); ok {
+			ingredients := step.Ingredients
+			step.Ingredients = []Ingredient{}
+			for _, ingredient := range ingredients {
+				if ingredient.UUID != ingredientID {
+					step.Ingredients = append(step.Ingredients, ingredient)
+				}
+			}
+			_, _, err = recipe.Save(db)
+		} else {
+			err = errors.New("Missing step")
+		}
+	}
+	return
+}
+
 // GetRecipe find a unique recipe by ID
 func GetRecipe(db *mgo.Database, ID string, userID string) (result Recipe, err error) {
 	err = getCollection(db).Find(
@@ -128,5 +164,17 @@ func GetAllRecipesByUser(db *mgo.Database, userID string, skip int, count int) (
 				},
 			},
 		}).Skip(skip).Limit(count).All(&results)
+	return
+}
+
+func findStepByID(steps []Step, ID string) (step Step, ok bool) {
+	ok = false
+	for _, curStep := range steps {
+		if curStep.UUID == ID {
+			ok = true
+			step = curStep
+			return
+		}
+	}
 	return
 }

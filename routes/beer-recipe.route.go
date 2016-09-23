@@ -99,16 +99,14 @@ func beerRoutes(router *gin.Engine) {
 		beerRecipeGroup.DELETE("/:recipeId", func(c *gin.Context) {
 			recipeID := c.Param("recipeId")
 			if userID, ok := GetID(c); !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
+			} else {
 				if err := beer.DeleteByID(database, recipeID, userID); err == nil {
-					c.JSON(http.StatusOK, gin.H{"message": "Recipe delete"})
+					c.JSON(http.StatusOK, gin.H{"message": "Recipe deleted"})
 				} else {
 					c.JSON(http.StatusNotFound, gin.H{"message": "Could not delete the recipe"})
 				}
-			} else {
-				fmt.Println(recipeID, userID)
-				c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Delete recipe not implemented yet"})
 			}
-
 		})
 
 		// @SubApi [beer-step]
@@ -185,15 +183,17 @@ func beerRoutes(router *gin.Engine) {
 			// @Success 200 {object} string "Success"
 			// @Resource beer-step
 			// @Router /:stepId [delete]
-			// @Deprecated
 			beerRecipeStepGroup.DELETE("/:stepId", func(c *gin.Context) {
 				recipeID := c.Param("recipeId")
 				stepID := c.Param("stepId")
 				if userID, ok := GetID(c); !ok {
 					c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
 				} else {
-					fmt.Println(recipeID, stepID, userID)
-					c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Delete step not implemented yet"})
+					if err := beer.DeleteStepByID(database, recipeID, stepID, userID); err == nil {
+						c.JSON(http.StatusOK, gin.H{"message": "Step deleted"})
+					} else {
+						c.JSON(http.StatusNotFound, gin.H{"message": "Could not delete the step"})
+					}
 				}
 
 			})
@@ -259,7 +259,6 @@ func beerRoutes(router *gin.Engine) {
 				// @Success 200 {object} string "Success"
 				// @Resource beer-step-ingredient
 				// @Router /:ingredientId [delete]
-				// @Deprecated
 				beerRecipeStepIngredientGroup.DELETE("/:ingredientId", func(c *gin.Context) {
 					recipeID := c.Param("recipeId")
 					stepID := c.Param("stepId")
@@ -267,8 +266,11 @@ func beerRoutes(router *gin.Engine) {
 					if userID, ok := GetID(c); !ok {
 						c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
 					} else {
-						fmt.Println(recipeID, stepID, ingredientID, userID)
-						c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Delete ingredient not implemented yet"})
+						if err := beer.DeleteIngredientByID(database, recipeID, stepID, ingredientID, userID); err == nil {
+							c.JSON(http.StatusOK, gin.H{"message": "Ingredient deleted"})
+						} else {
+							c.JSON(http.StatusNotFound, gin.H{"message": "Could not delete the ingredient"})
+						}
 					}
 
 				})

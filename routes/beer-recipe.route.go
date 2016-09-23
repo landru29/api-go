@@ -108,6 +108,9 @@ func beerRoutes(router *gin.Engine) {
 
 		})
 
+		// @SubApi [beer-step]
+		// @Resource /beer
+		// @Router /:recipeId/step
 		beerRecipeStepGroup := beerRecipeGroup.Group("/:recipeId/step")
 		{
 			// @Title Add step
@@ -116,8 +119,8 @@ func beerRoutes(router *gin.Engine) {
 			// @param recipeId path string true "Identifier of the recipe"
 			// @Param step     body string true "Step"
 			// @Success 200 {object} string "Success"
-			// @Resource /beer
-			// @Router /:recipeId/step [post]
+			// @Resource beer-step
+			// @Router / [post]
 			beerRecipeStepGroup.POST("/", func(c *gin.Context) {
 				recipeID := c.Param("recipeId")
 				if userID, ok := GetID(c); !ok {
@@ -156,8 +159,8 @@ func beerRoutes(router *gin.Engine) {
 			// @param stepId path string true "Identifier of the step"
 			// @Param step     body string true "Step"
 			// @Success 200 {object} string "Success"
-			// @Resource /beer
-			// @Router /:recipeId/step/:stepId [put]
+			// @Resource beer-step
+			// @Router /:stepId [put]
 			// @Deprecated
 			beerRecipeStepGroup.PUT("/:stepId", func(c *gin.Context) {
 				recipeID := c.Param("recipeId")
@@ -177,8 +180,8 @@ func beerRoutes(router *gin.Engine) {
 			// @param recipeId path string true "Identifier of the recipe"
 			// @param stepId   path string true "Identifier of the step"
 			// @Success 200 {object} string "Success"
-			// @Resource /beer
-			// @Router /:recipeId/step/:stepId [delete]
+			// @Resource beer-step
+			// @Router /:stepId [delete]
 			// @Deprecated
 			beerRecipeStepGroup.DELETE("/:stepId", func(c *gin.Context) {
 				recipeID := c.Param("recipeId")
@@ -192,6 +195,9 @@ func beerRoutes(router *gin.Engine) {
 
 			})
 
+			// @SubApi [beer-step-ingredient]
+			// @Resource beer-step
+			// @Router /:stepId/ingredient
 			beerRecipeStepIngredientGroup := beerRecipeStepGroup.Group("/:stepId/ingredient")
 			{
 
@@ -202,8 +208,8 @@ func beerRoutes(router *gin.Engine) {
 				// @param stepId   path string true "Identifier of the step"
 				// @Param ingredient     body string true "Ingredient"
 				// @Success 200 {object} string "Success"
-				// @Resource /beer
-				// @Router /:recipeId/step/:stepId/ingredient [post]
+				// @Resource beer-step-ingredient
+				// @Router / [post]
 				// @Deprecated
 				beerRecipeStepIngredientGroup.POST("/", func(c *gin.Context) {
 					recipeID := c.Param("recipeId")
@@ -225,8 +231,8 @@ func beerRoutes(router *gin.Engine) {
 				// @param ingredientId path string true "Identifier of the ingredient"
 				// @Param ingredient     body string true "Step"
 				// @Success 200 {object} string "Success"
-				// @Resource /beer
-				// @Router /:recipeId/step/:stepId/ingredient/:ingredientId [put]
+				// @Resource beer-step-ingredient
+				// @Router /:ingredientId [put]
 				// @Deprecated
 				beerRecipeStepIngredientGroup.PUT("/:ingredientId", func(c *gin.Context) {
 					recipeID := c.Param("recipeId")
@@ -248,8 +254,8 @@ func beerRoutes(router *gin.Engine) {
 				// @param stepId       path string true "Identifier of the step"
 				// @param ingredientId path string true "Identifier of the ingredient"
 				// @Success 200 {object} string "Success"
-				// @Resource /beer
-				// @Router /:recipeId/step/:stepId/ingredient/:ingredientId [delete]
+				// @Resource beer-step-ingredient
+				// @Router /:ingredientId [delete]
 				// @Deprecated
 				beerRecipeStepIngredientGroup.DELETE("/:ingredientId", func(c *gin.Context) {
 					recipeID := c.Param("recipeId")

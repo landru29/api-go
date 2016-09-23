@@ -82,9 +82,22 @@ func (data Recipe) Save(db *mgo.Database) (result Recipe, info *mgo.ChangeInfo, 
 	return
 }
 
+// DeleteByID remove a recipe by its ID
+func DeleteByID(db *mgo.Database, ID string, userID string) (err error) {
+	err = getCollection(db).Remove(
+		bson.M{
+			"_id": bson.ObjectIdHex(ID),
+			"user": bson.M{
+				"$in": []string{
+					userID,
+				},
+			},
+		})
+	return
+}
+
 // GetRecipe find a unique recipe by ID
 func GetRecipe(db *mgo.Database, ID string, userID string) (result Recipe, err error) {
-
 	err = getCollection(db).Find(
 		bson.M{
 			"_id": bson.ObjectIdHex(ID),

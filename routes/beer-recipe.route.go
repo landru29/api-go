@@ -96,11 +96,14 @@ func beerRoutes(router *gin.Engine) {
 		// @Success 200 {object} string "Success"
 		// @Resource /beer
 		// @Router /:recipeId [delete]
-		// @Deprecated
 		beerRecipeGroup.DELETE("/:recipeId", func(c *gin.Context) {
 			recipeID := c.Param("recipeId")
 			if userID, ok := GetID(c); !ok {
-				c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
+				if err := beer.DeleteByID(database, recipeID, userID); err == nil {
+					c.JSON(http.StatusOK, gin.H{"message": "Recipe delete"})
+				} else {
+					c.JSON(http.StatusNotFound, gin.H{"message": "Could not delete the recipe"})
+				}
 			} else {
 				fmt.Println(recipeID, userID)
 				c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Delete recipe not implemented yet"})

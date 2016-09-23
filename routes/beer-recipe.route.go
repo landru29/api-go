@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/landru29/api-go/model/beer"
 	"github.com/landru29/api-go/mongo"
-	uuid "github.com/nu7hatch/gouuid"
 )
 
 func beerRoutes(router *gin.Engine) {
@@ -123,33 +122,22 @@ func beerRoutes(router *gin.Engine) {
 			// @Resource beer-step
 			// @Router / [post]
 			beerRecipeStepGroup.POST("/", func(c *gin.Context) {
+				step := beer.Step{}
 				recipeID := c.Param("recipeId")
-				if userID, ok := GetID(c); !ok {
-					c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
-				} else {
-					if recipe, err := beer.GetRecipe(database, recipeID, userID); err == nil {
-						stepPost := beer.StepPost{}
-						if err := c.BindJSON(&stepPost); err == nil {
-							if UUID, err := uuid.NewV4(); err == nil {
-								step := beer.Step{
-									Name:        stepPost.Name,
-									Lasting:     stepPost.Lasting,
-									Temperature: stepPost.Temperature,
-									UUID:        UUID.String(),
-								}
-								recipe.Steps = append(recipe.Steps, step)
-								if result, _, err := recipe.Save(database); err == nil {
-									c.JSON(http.StatusOK, result)
-								} else {
-									c.JSON(http.StatusServiceUnavailable, gin.H{"message": "Could not save"})
-								}
-							} else {
-								c.JSON(http.StatusInternalServerError, gin.H{"message": "Something went wrong. Please try again."})
-							}
+				if userID, ok := GetID(c); ok {
+					if err := c.BindJSON(&step); err == nil {
+						step.UUID = ""
+						step.Ingredients = []beer.Ingredient{}
+						if step, err := beer.AddStep(database, recipeID, step, userID); err == nil {
+							c.JSON(http.StatusOK, step)
+						} else {
+							c.JSON(http.StatusInternalServerError, gin.H{"message": "Something went wrong. Please try again."})
 						}
 					} else {
-						c.JSON(http.StatusNotFound, gin.H{"message": "Recipe not found"})
+						c.JSON(http.StatusBadRequest, gin.H{"message": "Bad input fields"})
 					}
+				} else {
+					c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
 				}
 			})
 
@@ -213,16 +201,23 @@ func beerRoutes(router *gin.Engine) {
 				// @Success 200 {object} string "Success"
 				// @Resource beer-step-ingredient
 				// @Router / [post]
-				// @Deprecated
 				beerRecipeStepIngredientGroup.POST("/", func(c *gin.Context) {
+					ingredient := beer.Ingredient{}
 					recipeID := c.Param("recipeId")
 					stepID := c.Param("stepId")
-					if userID, ok := GetID(c); !ok {
-						c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
+					if userID, ok := GetID(c); ok {
+						if err := c.BindJSON(&ingredient); err == nil {
+							ingredient.UUID = ""
+							if ingredient, err = beer.AddIngredient(database, recipeID, stepID, ingredient, userID); err == nil {
+								c.JSON(http.StatusOK, ingredient)
+							} else {
+								c.JSON(http.StatusInternalServerError, gin.H{"message": "Something went wrong. Please try again."})
+							}
+						} else {
+							c.JSON(http.StatusBadRequest, gin.H{"message": "Bad input fields"})
+						}
 					} else {
-						fmt.Println(recipeID, stepID, userID)
-						content := gin.H{"message": "Add ingredient not implemented yet"}
-						c.JSON(http.StatusServiceUnavailable, content)
+						c.JSON(http.StatusUnauthorized, gin.H{"message": "You must login before"})
 					}
 				})
 

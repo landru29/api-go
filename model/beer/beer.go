@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/landru29/api-go/model"
+	uuid "github.com/nu7hatch/gouuid"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -34,13 +35,6 @@ type Unit struct {
 type Physical struct {
 	Value float64 `bson:"value" json:"value"`
 	Unit  Unit    `bson:"unit" json:"unit"`
-}
-
-// StepPost define to model of a new created step
-type StepPost struct {
-	Name        string   `bson:"name" json:"name"`
-	Lasting     float64  `bson:"lasting" json:"lasting"`
-	Temperature Physical `bson:"temperature" json:"temperature"`
 }
 
 // Step defines a brewing step
@@ -127,6 +121,36 @@ func DeleteIngredientByID(db *mgo.Database, recipeID string, stepID string, ingr
 			_, _, err = recipe.Save(db)
 		} else {
 			err = errors.New("Missing step")
+		}
+	}
+	return
+}
+
+// AddStep add a new step in the recipe
+func AddStep(db *mgo.Database, recipeID string, step Step, userID string) (result Step, err error) {
+	if recipe, err := GetRecipe(db, recipeID, userID); err == nil {
+		if UUID, err := uuid.NewV4(); err == nil {
+			step.UUID = UUID.String()
+			recipe.Steps = append(recipe.Steps, step)
+			_, _, err = recipe.Save(db)
+			result = step
+		}
+	}
+	return
+}
+
+// AddIngredient add a new ingredient in the step
+func AddIngredient(db *mgo.Database, recipeID string, stepID string, ingredient Ingredient, userID string) (result Ingredient, err error) {
+	if recipe, err := GetRecipe(db, recipeID, userID); err == nil {
+		if step, ok := findStepByID(recipe.Steps, stepID); ok {
+			if UUID, err := uuid.NewV4(); err == nil {
+				ingredient.UUID = UUID.String()
+				step.Ingredients = append(step.Ingredients, ingredient)
+				_, _, err = recipe.Save(db)
+				result = ingredient
+			}
+		} else {
+			err = errors.New("No step found")
 		}
 	}
 	return

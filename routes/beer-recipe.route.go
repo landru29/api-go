@@ -269,10 +269,7 @@ func beerRoutes(router *gin.Engine) {
 					}
 
 				})
-
 			}
-
 		}
-
 	}
 }
